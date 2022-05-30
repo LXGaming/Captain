@@ -12,4 +12,5 @@ RUN dotnet publish -c Release -o /app --no-restore
 FROM mcr.microsoft.com/dotnet/runtime:6.0
 WORKDIR /app
 COPY --from=build /app ./
+COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
 ENTRYPOINT ["dotnet", "LXGaming.Captain.dll"]
