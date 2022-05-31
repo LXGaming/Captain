@@ -68,6 +68,7 @@ public class DockerService : IHostedService {
             await task;
         }
         
+        _cancellationTokenSource.Dispose();
         HostService.Dispose();
     }
     
