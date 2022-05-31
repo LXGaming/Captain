@@ -72,14 +72,17 @@ public class DockerService : IHostedService {
     }
     
     private async Task OnContainerDieEventAsync(ContainerDieEvent @event) {
-        _logger.LogDebug("[{Type} {Action}] {Id}", @event.Type, @event.Action, @event.EventActor.Id);
+        _logger.LogDebug("[{Type} {Action}] {Name} ({Id})", 
+            @event.Type, @event.Action,
+            @event.EventActor.Name, @event.EventActor.Id.Truncate(12, ""));
         
         var trigger = GetOrCreateTrigger(@event.EventActor.Id);
         if (!trigger.Execute()) {
             return;
         }
         
-        Log.Warning("Restart Loop Detected: {Name} ({Id})", @event.EventActor.Name, @event.EventActor.Id);
+        Log.Warning("Restart Loop Detected: {Name} ({Id})",
+            @event.EventActor.Name, @event.EventActor.Id.Truncate(12, ""));
         
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);
