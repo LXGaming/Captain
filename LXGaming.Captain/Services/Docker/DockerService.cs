@@ -62,10 +62,14 @@ public class DockerService : IHostedService {
     }
 
     public async Task StopAsync(CancellationToken cancellationToken) {
-        _cancellationTokenSource.Cancel();
-
-        foreach (var task in _tasks) {
-            await task;
+        try {
+            _cancellationTokenSource.Cancel();
+            
+            foreach (var task in _tasks) {
+                await task;
+            }
+        } catch (AggregateException ex) {
+            Log.Error(ex, "Encountered an error while performing cancellation");
         }
         
         _cancellationTokenSource.Dispose();
