@@ -5,7 +5,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <VersionPrefix>1.0.2</VersionPrefix>
+        <VersionPrefix>1.0.3</VersionPrefix>
         <Authors>Alex Thomson</Authors>
         <Product>Captain</Product>
         <Copyright>Copyright © Alex Thomson</Copyright>
