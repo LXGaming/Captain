@@ -14,7 +14,6 @@ using LXGaming.Common.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace LXGaming.Captain.Services.Docker; 
 
@@ -69,7 +68,7 @@ public class DockerService : IHostedService {
                 await task;
             }
         } catch (AggregateException ex) {
-            Log.Error(ex, "Encountered an error while performing cancellation");
+            _logger.LogError(ex, "Encountered an error while performing cancellation");
         }
         
         _cancellationTokenSource.Dispose();
@@ -86,7 +85,7 @@ public class DockerService : IHostedService {
             return;
         }
         
-        Log.Warning("Restart Loop Detected: {Name} ({Id})",
+        _logger.LogWarning("Restart Loop Detected: {Name} ({Id})",
             @event.EventActor.Name, @event.EventActor.Id.Truncate(12, ""));
         
         var embedBuilder = new EmbedBuilder();

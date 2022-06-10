@@ -4,7 +4,7 @@ using LXGaming.Captain.Configuration;
 using LXGaming.Common.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Serilog;
+using Microsoft.Extensions.Logging;
 
 namespace LXGaming.Captain.Services.Discord; 
 
@@ -12,10 +12,12 @@ namespace LXGaming.Captain.Services.Discord;
 public class DiscordService : IHostedService {
     
     private readonly IConfiguration _configuration;
+    private readonly ILogger<DiscordService> _logger;
     private DiscordWebhookClient? _discordClient;
 
-    public DiscordService(IConfiguration configuration) {
+    public DiscordService(IConfiguration configuration, ILogger<DiscordService> logger) {
         _configuration = configuration;
+        _logger = logger;
     }
 
     public Task StartAsync(CancellationToken cancellationToken) {
@@ -30,7 +32,7 @@ public class DiscordService : IHostedService {
         
         var url = discordCategory.Url;
         if (string.IsNullOrEmpty(url)) {
-            Log.Warning("Url has not been configured for Discord");
+            _logger.LogWarning("Url has not been configured for Discord");
             return Task.CompletedTask;
         }
         
