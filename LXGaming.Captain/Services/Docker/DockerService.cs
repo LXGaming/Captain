@@ -46,7 +46,7 @@ public class DockerService : IHostedService {
         
         _tasks.Add(Task.Factory.StartNew(async () => {
             using var events = HostService.Events(_cancellationTokenSource.Token);
-            await Toolbox.ProcessConsoleStream(events, @event => {
+            await Toolbox.ProcessConsoleStreamAsync(events, @event => {
                 return @event.Type switch {
                     EventType.Container => @event.Action switch {
                         EventAction.Die => OnContainerDieEventAsync((ContainerDieEvent) @event),
