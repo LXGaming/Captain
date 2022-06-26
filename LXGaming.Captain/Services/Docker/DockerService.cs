@@ -87,6 +87,12 @@ public class DockerService : IHostedService {
         
         _logger.LogWarning("Restart Loop Detected: {Name} ({Id})",
             @event.EventActor.Name, @event.EventActor.Id.Truncate(12, ""));
+
+        if (_configuration.Config?.DockerCategory.AutomaticStop ?? false) {
+            HostService.GetContainers()
+                .SingleOrDefault(model => string.Equals(model.Id, @event.EventActor.Id))?
+                .Stop();
+        }
         
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);

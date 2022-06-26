@@ -7,6 +7,9 @@ public class DockerCategory {
     public const int DefaultRestartThreshold = 3;
     public const int DefaultRestartTimeout = 60; // 1 Minute
     
+    [JsonPropertyName("automaticStop")]
+    public bool AutomaticStop { get; init; } = false;
+    
     [JsonPropertyName("restartThreshold")]
     public int RestartThreshold { get; init; } = DefaultRestartThreshold;
 
