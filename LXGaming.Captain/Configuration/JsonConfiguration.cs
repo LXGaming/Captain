@@ -1,7 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace LXGaming.Captain.Configuration; 
+namespace LXGaming.Captain.Configuration;
 
 public class JsonConfiguration : IConfiguration {
 

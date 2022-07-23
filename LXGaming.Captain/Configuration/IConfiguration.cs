@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Configuration; 
+﻿namespace LXGaming.Captain.Configuration;
 
 public interface IConfiguration {
 

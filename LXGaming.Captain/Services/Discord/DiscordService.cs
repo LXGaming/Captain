@@ -6,11 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace LXGaming.Captain.Services.Discord; 
+namespace LXGaming.Captain.Services.Discord;
 
 [Service(ServiceLifetime.Singleton)]
 public class DiscordService : IHostedService {
-    
+
     private readonly IConfiguration _configuration;
     private readonly ILogger<DiscordService> _logger;
     private DiscordWebhookClient? _discordClient;
@@ -29,13 +29,13 @@ public class DiscordService : IHostedService {
         if (!discordCategory.Enabled) {
             return Task.CompletedTask;
         }
-        
+
         var url = discordCategory.Url;
         if (string.IsNullOrEmpty(url)) {
             _logger.LogWarning("Url has not been configured for Discord");
             return Task.CompletedTask;
         }
-        
+
         _discordClient = new DiscordWebhookClient(url);
         return Task.CompletedTask;
     }
@@ -49,7 +49,7 @@ public class DiscordService : IHostedService {
         var mentions = _configuration.Config?.DiscordCategory.Mentions;
         return SendMessageAsync(mentions != null ? string.Join(' ', mentions) : null, embed);
     }
-    
+
     public Task SendMessageAsync(string? text = null, Embed? embed = null) {
         var discordCategory = _configuration.Config?.DiscordCategory;
         return _discordClient?.SendMessageAsync(

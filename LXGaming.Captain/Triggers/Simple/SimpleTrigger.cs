@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Triggers.Simple; 
+﻿namespace LXGaming.Captain.Triggers.Simple;
 
 public class SimpleTrigger : TriggerBase {
 
@@ -13,10 +13,10 @@ public class SimpleTrigger : TriggerBase {
         if (ResetAfter != null && LastUpdatedAt != null && now - LastUpdatedAt >= ResetAfter) {
             Reset();
         }
-        
+
         Count += 1;
         LastUpdatedAt = now;
-        
+
         if (Count < Threshold || !CanFire(now)) {
             return false;
         }

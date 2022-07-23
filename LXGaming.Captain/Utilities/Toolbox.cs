@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Ductus.FluentDocker.Executors;
 
-namespace LXGaming.Captain.Utilities; 
+namespace LXGaming.Captain.Utilities;
 
 public static class Toolbox {
 
@@ -11,7 +11,7 @@ public static class Toolbox {
             await func(value);
         }
     }
-    
+
     public static string GetAssemblyVersion(Assembly assembly) {
         return (assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
                 ?? assembly.GetCustomAttribute<AssemblyVersionAttribute>()?.Version

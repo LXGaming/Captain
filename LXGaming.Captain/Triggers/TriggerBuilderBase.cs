@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Triggers; 
+﻿namespace LXGaming.Captain.Triggers;
 
 public abstract class TriggerBuilderBase<TTriggerBuilder, TTrigger>
     where TTriggerBuilder : TriggerBuilderBase<TTriggerBuilder, TTrigger>
@@ -7,7 +7,7 @@ public abstract class TriggerBuilderBase<TTriggerBuilder, TTrigger>
     public int Threshold { get; set; }
     public TimeSpan? ResetAfter { get; set; }
     public TimeSpan? FireInterval { get; set; }
-    
+
     public abstract TTrigger Build();
 
     public TTriggerBuilder WithThreshold(int threshold) {

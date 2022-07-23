@@ -1,7 +1,7 @@
-﻿namespace LXGaming.Captain.Triggers; 
+﻿namespace LXGaming.Captain.Triggers;
 
 public abstract class TriggerBase {
-    
+
     public int Threshold { get; }
     public TimeSpan? ResetAfter { get; }
     public TimeSpan? FireInterval { get; }
@@ -18,7 +18,7 @@ public abstract class TriggerBase {
     public virtual void Reset() {
         LastFiredAt = null;
     }
-    
+
     protected bool CanFire(DateTime now) {
         return LastFiredAt == null || (FireInterval != null && now - LastFiredAt >= FireInterval);
     }

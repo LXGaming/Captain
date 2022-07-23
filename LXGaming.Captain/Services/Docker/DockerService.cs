@@ -15,11 +15,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace LXGaming.Captain.Services.Docker; 
+namespace LXGaming.Captain.Services.Docker;
 
 [Service(ServiceLifetime.Singleton)]
 public class DockerService : IHostedService {
-    
+
     public IHostService HostService { get; private set; } = null!;
 
     private readonly IConfiguration _configuration;
@@ -37,13 +37,13 @@ public class DockerService : IHostedService {
         _tasks = new List<Task>();
         _triggers = new Dictionary<string, TriggerBase>();
     }
-    
+
     public Task StartAsync(CancellationToken cancellationToken) {
         HostService = new Builder()
             .UseHost()
             .UseNative()
             .Build();
-        
+
         _tasks.Add(Task.Factory.StartNew(async () => {
             using var events = HostService.Events(_cancellationTokenSource.Token);
             await Toolbox.ProcessConsoleStreamAsync(events, @event => {
@@ -56,35 +56,35 @@ public class DockerService : IHostedService {
                 };
             });
         }, TaskCreationOptions.LongRunning));
-        
+
         return Task.CompletedTask;
     }
 
     public async Task StopAsync(CancellationToken cancellationToken) {
         try {
             _cancellationTokenSource.Cancel();
-            
+
             foreach (var task in _tasks) {
                 await task;
             }
         } catch (AggregateException ex) {
             _logger.LogError(ex, "Encountered an error while performing cancellation");
         }
-        
+
         _cancellationTokenSource.Dispose();
         HostService.Dispose();
     }
-    
+
     private async Task OnContainerDieEventAsync(ContainerDieEvent @event) {
-        _logger.LogDebug("[{Type} {Action}] {Name} ({Id})", 
+        _logger.LogDebug("[{Type} {Action}] {Name} ({Id})",
             @event.Type, @event.Action,
             @event.EventActor.Name, @event.EventActor.Id.Truncate(12, ""));
-        
+
         var trigger = GetOrCreateTrigger(@event.EventActor.Id);
         if (!trigger.Execute()) {
             return;
         }
-        
+
         _logger.LogWarning("Restart Loop Detected: {Name} ({Id})",
             @event.EventActor.Name, @event.EventActor.Id.Truncate(12, ""));
 
@@ -93,7 +93,7 @@ public class DockerService : IHostedService {
                 .SingleOrDefault(model => string.Equals(model.Id, @event.EventActor.Id))?
                 .Stop();
         }
-        
+
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);
         embedBuilder.WithTitle("Restart Loop Detected");
@@ -103,18 +103,18 @@ public class DockerService : IHostedService {
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
         await _discordService.SendAlertAsync(embed: embedBuilder.Build());
     }
-    
+
     private TriggerBase GetOrCreateTrigger(string key) {
         if (_triggers.TryGetValue(key, out var existingTrigger)) {
             return existingTrigger;
         }
-        
+
         var dockerCategory = _configuration.Config?.DockerCategory;
         var trigger = new SimpleTriggerBuilder()
             .WithThreshold(dockerCategory?.RestartThreshold ?? DockerCategory.DefaultRestartThreshold)
             .WithResetAfter(TimeSpan.FromSeconds(dockerCategory?.RestartTimeout ?? DockerCategory.DefaultRestartTimeout))
             .Build();
-        
+
         _triggers.Add(key, trigger);
         return trigger;
     }
