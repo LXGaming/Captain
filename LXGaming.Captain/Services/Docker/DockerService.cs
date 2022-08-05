@@ -6,6 +6,7 @@ using Ductus.FluentDocker.Services.Extensions;
 using Humanizer;
 using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Configuration.Categories;
+using LXGaming.Captain.Models;
 using LXGaming.Captain.Services.Discord;
 using LXGaming.Captain.Triggers;
 using LXGaming.Captain.Triggers.Simple;
@@ -47,6 +48,10 @@ public class DockerService : IHostedService {
         _tasks.Add(Task.Factory.StartNew(async () => {
             using var events = HostService.Events(_cancellationTokenSource.Token);
             await Toolbox.ProcessConsoleStreamAsync(events, @event => {
+                if (!GetLabelValue(@event.EventActor, Labels.Enabled)) {
+                    return Task.CompletedTask;
+                }
+
                 return @event.Type switch {
                     EventType.Container => @event.Action switch {
                         EventAction.Die => OnContainerDieEventAsync((ContainerDieEvent) @event),
@@ -75,6 +80,23 @@ public class DockerService : IHostedService {
         HostService.Dispose();
     }
 
+    private T GetLabelValue<T>(EventActor eventActor, Label<T> label) where T : IConvertible {
+        foreach (var (key, value) in eventActor.Labels) {
+            if (!string.Equals(key, label.Id, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(value)) {
+                continue;
+            }
+
+            try {
+                return Label<T>.FromString(value);
+            } catch (Exception ex) {
+                _logger.LogWarning(ex, "Encountered an error while converting {Key}={Value} to {Type}", key, value, typeof(T));
+                return label.DefaultValue;
+            }
+        }
+
+        return label.DefaultValue;
+    }
+
     private async Task OnContainerDieEventAsync(ContainerDieEvent @event) {
         _logger.LogDebug("[{Type} {Action}] {Name} ({Id})",
             @event.Type, @event.Action,
@@ -88,7 +110,7 @@ public class DockerService : IHostedService {
         _logger.LogWarning("Restart Loop Detected: {Name} ({Id})",
             @event.EventActor.Name, @event.EventActor.Id.Truncate(12, ""));
 
-        if (_configuration.Config?.DockerCategory.AutomaticStop ?? false) {
+        if ((_configuration.Config?.DockerCategory.AutomaticStop ?? false) && !GetLabelValue(@event.EventActor, Labels.MonitorOnly)) {
             HostService.GetContainers()
                 .SingleOrDefault(model => string.Equals(model.Id, @event.EventActor.Id))?
                 .Stop();
