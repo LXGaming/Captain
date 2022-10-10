@@ -13,14 +13,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Discord.Net.Webhook" Version="3.7.2" />
-      <PackageReference Include="Ductus.FluentDocker" Version="2.10.55" />
+      <PackageReference Include="Discord.Net.Webhook" Version="3.8.1" />
+      <PackageReference Include="Ductus.FluentDocker" Version="2.10.57" />
       <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-      <PackageReference Include="LXGaming.Common.Hosting" Version="1.4.1" />
-      <PackageReference Include="LXGaming.Common.Serilog" Version="1.4.1" />
+      <PackageReference Include="LXGaming.Common.Hosting" Version="1.4.4" />
+      <PackageReference Include="LXGaming.Common.Serilog" Version="1.4.4" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
       <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
-      <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
       <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
       <PackageReference Include="Serilog.Sinks.File.Archive" Version="1.0.2" />
     </ItemGroup>
