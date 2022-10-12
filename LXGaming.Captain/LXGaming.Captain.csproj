@@ -14,7 +14,7 @@
 
     <ItemGroup>
       <PackageReference Include="Discord.Net.Webhook" Version="3.8.1" />
-      <PackageReference Include="Ductus.FluentDocker" Version="2.10.57" />
+      <PackageReference Include="Docker.DotNet" Version="3.125.12" />
       <PackageReference Include="Humanizer.Core" Version="2.14.1" />
       <PackageReference Include="LXGaming.Common.Hosting" Version="1.4.4" />
       <PackageReference Include="LXGaming.Common.Serilog" Version="1.4.4" />
