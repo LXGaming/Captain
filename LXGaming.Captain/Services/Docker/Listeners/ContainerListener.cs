@@ -43,17 +43,14 @@ public class ContainerListener : IListener {
             return;
         }
 
-        _logger.LogDebug("[{Type} {Action}] {Name} ({Id})",
-            message.Type, message.Action,
-            message.Actor.GetName(), message.Actor.GetId());
+        _logger.LogDebug("Container Die: {Name} ({Id})", message.Actor.GetName(), message.Actor.GetId());
 
         var trigger = _dockerService.GetOrCreateTrigger(message.Actor.ID);
         if (!trigger.Execute()) {
             return;
         }
 
-        _logger.LogWarning("Restart Loop Detected: {Name} ({Id})",
-            message.Actor.GetName(), message.Actor.GetId());
+        _logger.LogWarning("Restart Loop Detected: {Name} ({Id})", message.Actor.GetName(), message.Actor.GetId());
 
         var restartCategory = _configuration.Config?.DockerCategory.RestartCategory;
         if ((restartCategory?.AutomaticStop ?? false) && !_dockerService.GetLabelValue(message.Actor.Attributes, Labels.MonitorOnly)) {

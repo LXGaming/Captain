@@ -61,7 +61,7 @@ public class DockerService : IHostedService {
     public Task UnregisterAsync(string id, string name, IDictionary<string, string> labels) {
         _triggers.Remove(id);
 
-        _logger.LogDebug("Unregistered {Name} ({Id})", name, id.Truncate(12, ""));
+        _logger.LogInformation("Unregistered {Name} ({Id})", name, id.Truncate(12, ""));
         return Task.CompletedTask;
     }
 
