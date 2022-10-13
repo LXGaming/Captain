@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace LXGaming.Captain.Models;
+﻿namespace LXGaming.Captain.Models;
 
 public class Label<T> where T : IConvertible {
 
@@ -14,13 +12,5 @@ public class Label<T> where T : IConvertible {
         Id = id;
         Name = name;
         DefaultValue = defaultValue;
-    }
-
-    public static T FromString(string value) {
-        return (T) Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
-    }
-
-    public static string ToString(T value) {
-        return value.ToString(CultureInfo.InvariantCulture);
     }
 }

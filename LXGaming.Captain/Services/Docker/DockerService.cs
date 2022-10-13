@@ -1,4 +1,5 @@
-﻿using Docker.DotNet;
+﻿using System.Globalization;
+using Docker.DotNet;
 using Docker.DotNet.Models;
 using Humanizer;
 using LXGaming.Captain.Configuration;
@@ -98,20 +99,28 @@ public class DockerService : IHostedService {
         return trigger;
     }
 
-    public T GetLabelValue<T>(IDictionary<string, string> labels, Label<T> label) where T : IConvertible {
-        foreach (var (key, value) in labels) {
-            if (!string.Equals(key, label.Id, StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(value)) {
+    public T GetLabelValue<T>(IDictionary<string, string> dictionary, Label<T> label, T? defaultValue = default) where T : class, IConvertible {
+        return GetLabelValue(dictionary, label.Id, defaultValue ?? label.DefaultValue);
+    }
+
+    public T GetLabelValue<T>(IDictionary<string, string> dictionary, Label<T> label, T? defaultValue = default) where T : struct, IConvertible {
+        return GetLabelValue(dictionary, label.Id, defaultValue ?? label.DefaultValue);
+    }
+
+    private T GetLabelValue<T>(IDictionary<string, string> dictionary, string key, T defaultValue) where T : IConvertible {
+        foreach (var pair in dictionary) {
+            if (!string.Equals(pair.Key, key, StringComparison.OrdinalIgnoreCase)) {
                 continue;
             }
 
             try {
-                return Label<T>.FromString(value);
+                return (T) Convert.ChangeType(pair.Value, typeof(T), CultureInfo.InvariantCulture);
             } catch (Exception ex) {
-                _logger.LogWarning(ex, "Encountered an error while converting {Key}={Value} to {Type}", key, value, typeof(T));
-                return label.DefaultValue;
+                _logger.LogWarning(ex, "Encountered an error while converting {Key}={Value} to {Type}", pair.Key, pair.Value, typeof(T));
+                return defaultValue;
             }
         }
 
-        return label.DefaultValue;
+        return defaultValue;
     }
 }
