@@ -1,18 +1,10 @@
 ﻿using System.Text.Json.Serialization;
+using LXGaming.Captain.Configuration.Categories.Docker;
 
 namespace LXGaming.Captain.Configuration.Categories;
 
 public class DockerCategory {
 
-    public const int DefaultRestartThreshold = 3;
-    public const int DefaultRestartTimeout = 60; // 1 Minute
-
-    [JsonPropertyName("automaticStop")]
-    public bool AutomaticStop { get; init; } = false;
-
-    [JsonPropertyName("restartThreshold")]
-    public int RestartThreshold { get; init; } = DefaultRestartThreshold;
-
-    [JsonPropertyName("restartTimeout")]
-    public int RestartTimeout { get; init; } = DefaultRestartTimeout;
+    [JsonPropertyName("restart")]
+    public RestartCategory RestartCategory { get; init; } = new();
 }

@@ -55,7 +55,8 @@ public class ContainerListener : IListener {
         _logger.LogWarning("Restart Loop Detected: {Name} ({Id})",
             message.Actor.GetName(), message.Actor.GetId());
 
-        if ((_configuration.Config?.DockerCategory.AutomaticStop ?? false) && !_dockerService.GetLabelValue(message.Actor.Attributes, Labels.MonitorOnly)) {
+        var restartCategory = _configuration.Config?.DockerCategory.RestartCategory;
+        if ((restartCategory?.AutomaticStop ?? false) && !_dockerService.GetLabelValue(message.Actor.Attributes, Labels.MonitorOnly)) {
             await _dockerService.DockerClient.Containers.StopContainerAsync(message.Actor.ID, new ContainerStopParameters());
         }
 

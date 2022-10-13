@@ -1,7 +1,10 @@
 {
   "docker": {
-    "restartThreshold": 3,
-    "restartTimeout": 60
+    "restart": {
+      "automaticStop": false,
+      "threshold": 3,
+      "timeout": 60
+    }
   },
   "notification": {
     "enabled": true,

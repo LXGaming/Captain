@@ -2,7 +2,7 @@
 using Docker.DotNet.Models;
 using Humanizer;
 using LXGaming.Captain.Configuration;
-using LXGaming.Captain.Configuration.Categories;
+using LXGaming.Captain.Configuration.Categories.Docker;
 using LXGaming.Captain.Models;
 using LXGaming.Captain.Services.Docker.Listeners;
 using LXGaming.Captain.Triggers;
@@ -88,10 +88,10 @@ public class DockerService : IHostedService {
             return existingTrigger;
         }
 
-        var dockerCategory = _configuration.Config?.DockerCategory;
+        var restartCategory = _configuration.Config?.DockerCategory.RestartCategory;
         var trigger = new SimpleTriggerBuilder()
-            .WithThreshold(dockerCategory?.RestartThreshold ?? DockerCategory.DefaultRestartThreshold)
-            .WithResetAfter(TimeSpan.FromSeconds(dockerCategory?.RestartTimeout ?? DockerCategory.DefaultRestartTimeout))
+            .WithThreshold(restartCategory?.Threshold ?? RestartCategory.DefaultThreshold)
+            .WithResetAfter(TimeSpan.FromSeconds(restartCategory?.Timeout ?? RestartCategory.DefaultTimeout))
             .Build();
 
         _triggers.Add(key, trigger);
