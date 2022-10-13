@@ -24,4 +24,13 @@ public static class DockerExtensions {
     private static string? GetAttributeValue(this Actor actor, string key) {
         return actor.Attributes.TryGetValue(key, out var value) ? value : null;
     }
+
+    public static (string, string?) ParseAction(this Message message) {
+        var split = message.Action.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return split.Length switch {
+            1 => (split[0], null),
+            2 => (split[0], split[1]),
+            _ => (message.Action, null)
+        };
+    }
 }

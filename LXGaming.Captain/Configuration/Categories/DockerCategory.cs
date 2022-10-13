@@ -5,6 +5,9 @@ namespace LXGaming.Captain.Configuration.Categories;
 
 public class DockerCategory {
 
+    [JsonPropertyName("health")]
+    public HealthCategory HealthCategory { get; init; } = new();
+
     [JsonPropertyName("restart")]
     public RestartCategory RestartCategory { get; init; } = new();
 }

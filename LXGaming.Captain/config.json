@@ -1,5 +1,9 @@
 {
   "docker": {
+    "health": {
+      "healthy": false,
+      "unhealthy": true
+    },
     "restart": {
       "automaticStop": false,
       "threshold": 3,

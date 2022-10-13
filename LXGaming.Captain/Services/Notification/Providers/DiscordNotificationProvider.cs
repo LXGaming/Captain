@@ -62,6 +62,17 @@ public class DiscordNotificationProvider : IHostedService, INotificationProvider
             avatarUrl: discordCategory?.AvatarUrl) ?? Task.CompletedTask;
     }
 
+    public Task SendHealthStatusAsync(Actor actor, bool state) {
+        var embedBuilder = new EmbedBuilder();
+        embedBuilder.WithColor(state ? Color.Green : Color.Red);
+        embedBuilder.WithTitle("Health");
+        embedBuilder.AddField("Id", $"```{actor.GetId()}```", true);
+        embedBuilder.AddField("Name", $"```{actor.GetName()}```", true);
+        embedBuilder.AddField("Status", $"```{(state ? "Healthy" : "Unhealthy")}```", true);
+        embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
+        return SendAlertAsync(embedBuilder.Build());
+    }
+
     public Task SendRestartLoopAsync(Actor actor) {
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);

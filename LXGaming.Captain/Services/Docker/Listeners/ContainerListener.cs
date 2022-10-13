@@ -27,9 +27,11 @@ public class ContainerListener : IListener {
     }
 
     public Task ExecuteAsync(Message message) {
-        return message.Action switch {
+        var (key, value) = message.ParseAction();
+        return key switch {
             "destroy" => OnDestroyAsync(message),
             "die" => OnDieAsync(message),
+            "health_status" => OnHealthStatusAsync(message, value),
             _ => Task.CompletedTask
         };
     }
@@ -58,5 +60,24 @@ public class ContainerListener : IListener {
         }
 
         await _notificationService.NotifyAsync(provider => provider.SendRestartLoopAsync(message.Actor));
+    }
+
+    private Task OnHealthStatusAsync(Message message, string? status) {
+        if (!_dockerService.GetLabelValue(message.Actor.Attributes, Labels.Enabled)) {
+            return Task.CompletedTask;
+        }
+
+        _logger.LogDebug("Container Health Status: {Name} ({Id})", message.Actor.GetName(), message.Actor.GetId());
+
+        var healthCategory = _configuration.Config?.DockerCategory.HealthCategory;
+        if (string.Equals(status, "healthy") && (healthCategory?.Healthy ?? false)) {
+            return _notificationService.NotifyAsync(provider => provider.SendHealthStatusAsync(message.Actor, true));
+        }
+
+        if (string.Equals(status, "unhealthy") && (healthCategory?.Unhealthy ?? false)) {
+            return _notificationService.NotifyAsync(provider => provider.SendHealthStatusAsync(message.Actor, false));
+        }
+
+        return Task.CompletedTask;
     }
 }
