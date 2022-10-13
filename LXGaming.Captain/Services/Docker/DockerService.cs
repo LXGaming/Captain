@@ -1,5 +1,6 @@
 ﻿using Docker.DotNet;
 using Docker.DotNet.Models;
+using Humanizer;
 using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Configuration.Categories;
 using LXGaming.Captain.Models;
@@ -54,6 +55,13 @@ public class DockerService : IHostedService {
 
         _cancellationTokenSource.Dispose();
         DockerClient.Dispose();
+        return Task.CompletedTask;
+    }
+
+    public Task UnregisterAsync(string id, string name, IDictionary<string, string> labels) {
+        _triggers.Remove(id);
+
+        _logger.LogDebug("Unregistered {Name} ({Id})", name, id.Truncate(12, ""));
         return Task.CompletedTask;
     }
 

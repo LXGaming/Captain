@@ -28,9 +28,14 @@ public class ContainerListener : IListener {
 
     public Task ExecuteAsync(Message message) {
         return message.Action switch {
+            "destroy" => OnDestroyAsync(message),
             "die" => OnDieAsync(message),
             _ => Task.CompletedTask
         };
+    }
+
+    private Task OnDestroyAsync(Message message) {
+        return _dockerService.UnregisterAsync(message.Actor.ID, message.Actor.GetName() ?? message.Actor.GetId(), message.Actor.Attributes);
     }
 
     private async Task OnDieAsync(Message message) {
