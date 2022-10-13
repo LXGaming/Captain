@@ -2,7 +2,7 @@
 
 namespace LXGaming.Captain.Configuration.Categories;
 
-public class DiscordCategory {
+public class NotificationCategory {
 
     [JsonPropertyName("enabled")]
     public bool Enabled { get; init; } = true;

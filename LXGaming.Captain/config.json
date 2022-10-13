@@ -1,13 +1,13 @@
 {
-  "discord": {
+  "docker": {
+    "restartThreshold": 3,
+    "restartTimeout": 60
+  },
+  "notification": {
     "enabled": true,
     "url": "",
     "username": "Captain",
     "avatarUrl": null,
     "mentions": []
-  },
-  "docker": {
-    "restartThreshold": 3,
-    "restartTimeout": 60
   }
 }

@@ -1,10 +1,8 @@
-﻿using Discord;
-using Docker.DotNet.Models;
+﻿using Docker.DotNet.Models;
 using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Models;
-using LXGaming.Captain.Services.Discord;
 using LXGaming.Captain.Services.Docker.Utilities;
-using LXGaming.Captain.Utilities;
+using LXGaming.Captain.Services.Notification;
 using LXGaming.Common.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,17 +13,17 @@ namespace LXGaming.Captain.Services.Docker.Listeners;
 public class ContainerListener : IListener {
 
     private readonly IConfiguration _configuration;
-    private readonly DiscordService _discordService;
     private readonly DockerService _dockerService;
     private readonly ILogger<ContainerListener> _logger;
+    private readonly NotificationService _notificationService;
 
     public string Type => "container";
 
-    public ContainerListener(IConfiguration configuration, DiscordService discordService, DockerService dockerService, ILogger<ContainerListener> logger) {
+    public ContainerListener(IConfiguration configuration, DockerService dockerService, ILogger<ContainerListener> logger, NotificationService notificationService) {
         _configuration = configuration;
-        _discordService = discordService;
         _dockerService = dockerService;
         _logger = logger;
+        _notificationService = notificationService;
     }
 
     public Task ExecuteAsync(Message message) {
@@ -35,7 +33,7 @@ public class ContainerListener : IListener {
         };
     }
 
-    public async Task OnDieAsync(Message message) {
+    private async Task OnDieAsync(Message message) {
         if (!_dockerService.GetLabelValue(message.Actor.Attributes, Labels.Enabled)) {
             return;
         }
@@ -56,13 +54,6 @@ public class ContainerListener : IListener {
             await _dockerService.DockerClient.Containers.StopContainerAsync(message.Actor.ID, new ContainerStopParameters());
         }
 
-        var embedBuilder = new EmbedBuilder();
-        embedBuilder.WithColor(Color.Orange);
-        embedBuilder.WithTitle("Restart Loop Detected");
-        embedBuilder.AddField("Id", $"```{message.Actor.GetId()}```", true);
-        embedBuilder.AddField("Name", $"```{message.Actor.GetName()}```", true);
-        embedBuilder.AddField("Exit Code", $"```{message.Actor.GetExitCode()}```", true);
-        embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
-        await _discordService.SendAlertAsync(embed: embedBuilder.Build());
+        await _notificationService.NotifyAsync(provider => provider.SendRestartLoopAsync(message.Actor));
     }
 }
