@@ -1,8 +1,7 @@
 ﻿using Discord;
 using Discord.Webhook;
-using Docker.DotNet.Models;
 using LXGaming.Captain.Configuration;
-using LXGaming.Captain.Services.Docker.Utilities;
+using LXGaming.Captain.Services.Docker.Models;
 using LXGaming.Captain.Utilities;
 using LXGaming.Common.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -62,24 +61,24 @@ public class DiscordNotificationProvider : IHostedService, INotificationProvider
             avatarUrl: discordCategory?.AvatarUrl) ?? Task.CompletedTask;
     }
 
-    public Task SendHealthStatusAsync(Actor actor, bool state) {
+    public Task SendHealthStatusAsync(Container container, bool state) {
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(state ? Color.Green : Color.Red);
         embedBuilder.WithTitle("Health");
-        embedBuilder.AddField("Id", $"```{actor.GetId()}```", true);
-        embedBuilder.AddField("Name", $"```{actor.GetName()}```", true);
+        embedBuilder.AddField("Id", $"```{container.ShortId}```", true);
+        embedBuilder.AddField("Name", $"```{container.Name}```", true);
         embedBuilder.AddField("Status", $"```{(state ? "Healthy" : "Unhealthy")}```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
         return SendAlertAsync(embedBuilder.Build());
     }
 
-    public Task SendRestartLoopAsync(Actor actor) {
+    public Task SendRestartLoopAsync(Container container, string exitCode) {
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);
         embedBuilder.WithTitle("Restart Loop Detected");
-        embedBuilder.AddField("Id", $"```{actor.GetId()}```", true);
-        embedBuilder.AddField("Name", $"```{actor.GetName()}```", true);
-        embedBuilder.AddField("Exit Code", $"```{actor.GetExitCode()}```", true);
+        embedBuilder.AddField("Id", $"```{container.ShortId}```", true);
+        embedBuilder.AddField("Name", $"```{container.Name}```", true);
+        embedBuilder.AddField("Exit Code", $"```{exitCode}```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
         return SendAlertAsync(embedBuilder.Build());
     }

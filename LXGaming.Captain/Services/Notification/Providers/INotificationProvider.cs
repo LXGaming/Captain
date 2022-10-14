@@ -1,10 +1,10 @@
-﻿using Docker.DotNet.Models;
+﻿using LXGaming.Captain.Services.Docker.Models;
 
 namespace LXGaming.Captain.Services.Notification.Providers;
 
 public interface INotificationProvider {
 
-    Task SendHealthStatusAsync(Actor actor, bool state);
+    Task SendHealthStatusAsync(Container container, bool state);
 
-    Task SendRestartLoopAsync(Actor actor);
+    Task SendRestartLoopAsync(Container container, string exitCode);
 }

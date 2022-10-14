@@ -1,12 +1,11 @@
 ﻿using System.Globalization;
 using Docker.DotNet;
 using Docker.DotNet.Models;
-using Humanizer;
 using LXGaming.Captain.Configuration;
-using LXGaming.Captain.Configuration.Categories.Docker;
 using LXGaming.Captain.Models;
 using LXGaming.Captain.Services.Docker.Listeners;
-using LXGaming.Captain.Triggers;
+using LXGaming.Captain.Services.Docker.Models;
+using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Triggers.Simple;
 using LXGaming.Common.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,27 +23,32 @@ public class DockerService : IHostedService {
     private readonly ILogger<DockerService> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly CancellationTokenSource _cancellationTokenSource;
+    private readonly IDictionary<string, Container> _containers;
     private readonly SemaphoreSlim _semaphore;
-    private readonly IDictionary<string, TriggerBase> _triggers;
 
     public DockerService(IConfiguration configuration, ILogger<DockerService> logger, IServiceProvider serviceProvider) {
         _configuration = configuration;
         _logger = logger;
         _serviceProvider = serviceProvider;
         _cancellationTokenSource = new CancellationTokenSource();
+        _containers = new Dictionary<string, Container>();
         _semaphore = new SemaphoreSlim(1, 1);
-        _triggers = new Dictionary<string, TriggerBase>();
     }
 
-    public Task StartAsync(CancellationToken cancellationToken) {
+    public async Task StartAsync(CancellationToken cancellationToken) {
         DockerClient = new DockerClientConfiguration().CreateClient();
 
-        DockerClient.System.MonitorEventsAsync(
+        _ = DockerClient.System.MonitorEventsAsync(
             new ContainerEventsParameters(),
             new Progress<Message>(OnMessageAsync),
             _cancellationTokenSource.Token);
 
-        return Task.CompletedTask;
+        var parameters = new ContainersListParameters {
+            All = true
+        };
+        foreach (var container in await DockerClient.Containers.ListContainersAsync(parameters, cancellationToken)) {
+            await RegisterAsync(container.ID, container.GetName() ?? container.GetId(), container.Labels);
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) {
@@ -59,10 +63,35 @@ public class DockerService : IHostedService {
         return Task.CompletedTask;
     }
 
-    public Task UnregisterAsync(string id, string name, IDictionary<string, string> labels) {
-        _triggers.Remove(id);
+    public Task RegisterAsync(string id, string name, IDictionary<string, string> labels) {
+        if (_containers.TryGetValue(id, out var existingContainer)) {
+            _logger.LogWarning("Container {Name} ({Id}) is already registered", existingContainer.Name, existingContainer.ShortId);
+            return Task.CompletedTask;
+        }
 
-        _logger.LogInformation("Unregistered {Name} ({Id})", name, id.Truncate(12, ""));
+        if (!GetLabelValue(labels, Labels.Enabled)) {
+            return Task.CompletedTask;
+        }
+
+        var restartCategory = _configuration.Config?.DockerCategory.RestartCategory;
+        var restartTrigger = new SimpleTriggerBuilder()
+            .WithThreshold(GetLabelValue(labels, Labels.RestartThreshold, restartCategory?.Threshold))
+            .WithResetAfter(TimeSpan.FromSeconds(GetLabelValue(labels, Labels.RestartTimeout, restartCategory?.Timeout)))
+            .Build();
+
+        var container = new Container(id, name, labels, restartTrigger);
+        _containers.Add(id, container);
+
+        _logger.LogInformation("Registered {Name} ({Id})", container.Name, container.ShortId);
+        return Task.CompletedTask;
+    }
+
+    public Task UnregisterAsync(string id, string name, IDictionary<string, string> labels) {
+        if (!_containers.Remove(id, out var existingContainer)) {
+            return Task.CompletedTask;
+        }
+
+        _logger.LogInformation("Unregistered {Name} ({Id})", existingContainer.Name, existingContainer.ShortId);
         return Task.CompletedTask;
     }
 
@@ -84,19 +113,8 @@ public class DockerService : IHostedService {
         }
     }
 
-    public TriggerBase GetOrCreateTrigger(string key) {
-        if (_triggers.TryGetValue(key, out var existingTrigger)) {
-            return existingTrigger;
-        }
-
-        var restartCategory = _configuration.Config?.DockerCategory.RestartCategory;
-        var trigger = new SimpleTriggerBuilder()
-            .WithThreshold(restartCategory?.Threshold ?? RestartCategory.DefaultThreshold)
-            .WithResetAfter(TimeSpan.FromSeconds(restartCategory?.Timeout ?? RestartCategory.DefaultTimeout))
-            .Build();
-
-        _triggers.Add(key, trigger);
-        return trigger;
+    public Container? GetContainer(string key) {
+        return _containers.TryGetValue(key, out var value) ? value : null;
     }
 
     public T GetLabelValue<T>(IDictionary<string, string> dictionary, Label<T> label, T? defaultValue = default) where T : class, IConvertible {
