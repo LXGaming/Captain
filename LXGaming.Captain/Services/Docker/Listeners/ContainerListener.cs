@@ -57,8 +57,6 @@ public class ContainerListener : IListener {
             return;
         }
 
-        _logger.LogWarning("Restart Loop Detected: {Name} ({Id})", container.Name, container.ShortId);
-
         var restartCategory = _configuration.Config?.DockerCategory.RestartCategory;
         if (_dockerService.GetLabelValue(container.Labels, Labels.RestartAutomaticStop, restartCategory?.AutomaticStop)
             && !_dockerService.GetLabelValue(container.Labels, Labels.MonitorOnly)) {
