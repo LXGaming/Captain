@@ -63,6 +63,7 @@ public class DockerService : IHostedService {
         }
 
         _cancellationTokenSource.Dispose();
+        _semaphore.Dispose();
         DockerClient.Dispose();
         return Task.CompletedTask;
     }
