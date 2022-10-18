@@ -10,12 +10,14 @@ public class Container {
     public readonly string Id;
     public readonly string Name;
     public readonly IDictionary<string, string> Labels;
+    public readonly bool Tty;
     public readonly TriggerBase RestartTrigger;
 
-    public Container(string id, string name, IDictionary<string, string> labels, TriggerBase restartTrigger) {
+    public Container(string id, string name, IDictionary<string, string> labels, bool tty, TriggerBase restartTrigger) {
         Id = id;
         Name = name;
         Labels = labels;
+        Tty = tty;
         RestartTrigger = restartTrigger;
     }
 }

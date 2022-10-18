@@ -72,6 +72,17 @@ public class DiscordNotificationProvider : IHostedService, INotificationProvider
         return SendAlertAsync(embedBuilder.Build());
     }
 
+    public Task SendLogAsync(Container container, string message) {
+        var embedBuilder = new EmbedBuilder();
+        embedBuilder.WithColor(Color.Orange);
+        embedBuilder.WithTitle("Log");
+        embedBuilder.AddField("Id", $"```{container.ShortId}```", true);
+        embedBuilder.AddField("Name", $"```{container.Name}```", true);
+        embedBuilder.AddField("Message", $"```{message}```", true);
+        embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
+        return SendAlertAsync(embedBuilder.Build());
+    }
+
     public Task SendRestartLoopAsync(Container container, string exitCode) {
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);

@@ -4,6 +4,13 @@
       "healthy": false,
       "unhealthy": true
     },
+    "logs": [
+      {
+        "names": ["hello-world"],
+        "pattern": "(Hello) from Docker!",
+        "replacement": "$1World!"
+      }
+    ],
     "restart": {
       "automaticStop": false,
       "threshold": 3,

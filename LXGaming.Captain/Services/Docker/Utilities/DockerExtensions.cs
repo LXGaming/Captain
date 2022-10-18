@@ -1,5 +1,7 @@
-﻿using Docker.DotNet.Models;
-using Humanizer;
+﻿using System.Text;
+using Docker.DotNet;
+using Docker.DotNet.Models;
+using MultiplexedStream = LXGaming.Captain.Services.Docker.Utilities.IO.MultiplexedStream;
 
 namespace LXGaming.Captain.Services.Docker.Utilities;
 
@@ -9,32 +11,33 @@ public static class DockerExtensions {
         return actor.GetAttributeValue("exitCode");
     }
 
-    public static string GetId(this Actor actor) {
-        return actor.ID.Truncate(12, "");
-    }
-
-    public static IDictionary<string, string> GetLabels(this Actor actor) {
-        return actor.Attributes
-            .Where(pair => !string.Equals(pair.Key, "image", StringComparison.OrdinalIgnoreCase))
-            .Where(pair => !string.Equals(pair.Key, "name", StringComparison.OrdinalIgnoreCase))
-            .ToDictionary(pair => pair.Key, pair => pair.Value);
-    }
-
-    public static string? GetName(this Actor actor) {
-        return actor.GetAttributeValue("name");
-    }
-
     private static string? GetAttributeValue(this Actor actor, string key) {
         return actor.Attributes.TryGetValue(key, out var value) ? value : null;
     }
 
-    public static string GetId(this ContainerListResponse containerListResponse) {
-        return containerListResponse.ID.Truncate(12, "");
+    public static string GetName(this ContainerInspectResponse response) {
+        return response.Name.StartsWith('/') ? response.Name[1..] : response.Name;
     }
 
-    public static string? GetName(this ContainerListResponse containerListResponse) {
-        var name = containerListResponse.Names.FirstOrDefault();
-        return name?.StartsWith('/') ?? false ? name[1..] : name;
+    public static async Task<MultiplexedStream> GetLogsAsync(this IContainerOperations containers,
+        string id, bool tty, ContainerLogsParameters parameters, CancellationToken cancellationToken = default) {
+#pragma warning disable CS0618
+        var stream = await containers.GetContainerLogsAsync(id, parameters, cancellationToken);
+#pragma warning restore CS0618
+        return new MultiplexedStream(stream, !tty);
+    }
+
+    public static async Task GetLogsAsync(this IContainerOperations containers,
+        string id, bool tty, ContainerLogsParameters parameters, Func<string, Task> func, CancellationToken cancellationToken = default) {
+        var taskCompletionSource = new TaskCompletionSource<string?>();
+        await using var stream = await containers.GetLogsAsync(id, tty, parameters, cancellationToken);
+        using var streamReader = new StreamReader(stream, new UTF8Encoding(false));
+        await using (cancellationToken.Register(() => taskCompletionSource.TrySetCanceled(cancellationToken))) {
+            string? line;
+            while ((line = await await Task.WhenAny(streamReader.ReadLineAsync(), taskCompletionSource.Task)) != null) {
+                await func(line);
+            }
+        }
     }
 
     public static (string, string?) ParseAction(this Message message) {

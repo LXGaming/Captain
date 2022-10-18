@@ -33,16 +33,17 @@ public class ContainerListener : IListener {
             "destroy" => OnDestroyAsync(message),
             "die" => OnDieAsync(message),
             "health_status" => OnHealthStatusAsync(message, value),
+            "start" => OnStartAsync(message),
             _ => Task.CompletedTask
         };
     }
 
     private Task OnCreateAsync(Message message) {
-        return _dockerService.RegisterAsync(message.Actor.ID, message.Actor.GetName() ?? message.Actor.GetId(), message.Actor.GetLabels());
+        return _dockerService.RegisterAsync(message.Actor.ID);
     }
 
     private Task OnDestroyAsync(Message message) {
-        return _dockerService.UnregisterAsync(message.Actor.ID, message.Actor.GetName() ?? message.Actor.GetId(), message.Actor.GetLabels());
+        return _dockerService.UnregisterAsync(message.Actor.ID);
     }
 
     private async Task OnDieAsync(Message message) {
@@ -72,10 +73,6 @@ public class ContainerListener : IListener {
             return Task.CompletedTask;
         }
 
-        if (!_dockerService.GetLabelValue(container.Labels, Labels.Enabled)) {
-            return Task.CompletedTask;
-        }
-
         _logger.LogDebug("Container Health Status: {Name} ({Id})", container.Name, container.ShortId);
 
         var healthCategory = _configuration.Config?.DockerCategory.HealthCategory;
@@ -88,5 +85,16 @@ public class ContainerListener : IListener {
         }
 
         return Task.CompletedTask;
+    }
+
+    private Task OnStartAsync(Message message) {
+        var container = _dockerService.GetContainer(message.Actor.ID);
+        if (container == null) {
+            return Task.CompletedTask;
+        }
+
+        _logger.LogDebug("Container Start: {Name} ({Id})", container.Name, container.ShortId);
+
+        return _dockerService.OnStartAsync(container, DateTimeOffset.FromUnixTimeSeconds(message.Time));
     }
 }

@@ -19,6 +19,11 @@ public class LoggingNotificationProvider : INotificationProvider {
         return Task.CompletedTask;
     }
 
+    public Task SendLogAsync(Container container, string message) {
+        _logger.LogWarning("Log {Name} ({Id}): {Message}", container.Name, container.ShortId, message);
+        return Task.CompletedTask;
+    }
+
     public Task SendRestartLoopAsync(Container container, string exitCode) {
         _logger.LogWarning("Restart Loop {Name} ({Id}): {ExitCode}", container.Name, container.ShortId, exitCode);
         return Task.CompletedTask;

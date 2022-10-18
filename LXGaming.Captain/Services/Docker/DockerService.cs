@@ -2,10 +2,12 @@
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using LXGaming.Captain.Configuration;
+using LXGaming.Captain.Configuration.Categories.Docker;
 using LXGaming.Captain.Models;
 using LXGaming.Captain.Services.Docker.Listeners;
 using LXGaming.Captain.Services.Docker.Models;
 using LXGaming.Captain.Services.Docker.Utilities;
+using LXGaming.Captain.Services.Notification;
 using LXGaming.Captain.Triggers.Simple;
 using LXGaming.Common.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,14 +23,16 @@ public class DockerService : IHostedService {
 
     private readonly IConfiguration _configuration;
     private readonly ILogger<DockerService> _logger;
+    private readonly NotificationService _notificationService;
     private readonly IServiceProvider _serviceProvider;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly IDictionary<string, Container> _containers;
     private readonly SemaphoreSlim _semaphore;
 
-    public DockerService(IConfiguration configuration, ILogger<DockerService> logger, IServiceProvider serviceProvider) {
+    public DockerService(IConfiguration configuration, ILogger<DockerService> logger, NotificationService notificationService, IServiceProvider serviceProvider) {
         _configuration = configuration;
         _logger = logger;
+        _notificationService = notificationService;
         _serviceProvider = serviceProvider;
         _cancellationTokenSource = new CancellationTokenSource();
         _containers = new Dictionary<string, Container>();
@@ -47,7 +51,7 @@ public class DockerService : IHostedService {
             All = true
         };
         foreach (var container in await DockerClient.Containers.ListContainersAsync(parameters, cancellationToken)) {
-            await RegisterAsync(container.ID, container.GetName() ?? container.GetId(), container.Labels);
+            await RegisterAsync(container.ID);
         }
     }
 
@@ -63,36 +67,82 @@ public class DockerService : IHostedService {
         return Task.CompletedTask;
     }
 
-    public Task RegisterAsync(string id, string name, IDictionary<string, string> labels) {
+    public async Task RegisterAsync(string id) {
         if (_containers.TryGetValue(id, out var existingContainer)) {
             _logger.LogWarning("Container {Name} ({Id}) is already registered", existingContainer.Name, existingContainer.ShortId);
-            return Task.CompletedTask;
+            return;
         }
 
-        if (!GetLabelValue(labels, Labels.Enabled)) {
-            return Task.CompletedTask;
+        var dockerCategory = _configuration.Config?.DockerCategory;
+        if (dockerCategory == null) {
+            _logger.LogWarning("DockerCategory is unavailable");
+            return;
         }
 
-        var restartCategory = _configuration.Config?.DockerCategory.RestartCategory;
-        var restartTrigger = new SimpleTriggerBuilder()
-            .WithThreshold(GetLabelValue(labels, Labels.RestartThreshold, restartCategory?.Threshold))
-            .WithResetAfter(TimeSpan.FromSeconds(GetLabelValue(labels, Labels.RestartTimeout, restartCategory?.Timeout)))
+        var inspect = await DockerClient.Containers.InspectContainerAsync(id);
+        if (!GetLabelValue(inspect.Config.Labels, Labels.Enabled)) {
+            return;
+        }
+
+        var container = new ContainerBuilder()
+            .WithId(id)
+            .WithName(inspect.GetName())
+            .WithLabels(inspect.Config.Labels)
+            .WithTty(inspect.Config.Tty)
+            .WithRestartTrigger(new SimpleTriggerBuilder()
+                .WithThreshold(GetLabelValue(inspect.Config.Labels, Labels.RestartThreshold, dockerCategory.RestartCategory.Threshold))
+                .WithResetAfter(TimeSpan.FromSeconds(GetLabelValue(inspect.Config.Labels, Labels.RestartTimeout, dockerCategory.RestartCategory.Timeout)))
+                .Build())
             .Build();
 
-        var container = new Container(id, name, labels, restartTrigger);
         _containers.Add(id, container);
+        if (inspect.State.Running) {
+            await OnStartAsync(container, DateTimeOffset.UtcNow);
+        }
 
         _logger.LogInformation("Registered {Name} ({Id})", container.Name, container.ShortId);
-        return Task.CompletedTask;
     }
 
-    public Task UnregisterAsync(string id, string name, IDictionary<string, string> labels) {
+    public Task UnregisterAsync(string id) {
         if (!_containers.Remove(id, out var existingContainer)) {
             return Task.CompletedTask;
         }
 
         _logger.LogInformation("Unregistered {Name} ({Id})", existingContainer.Name, existingContainer.ShortId);
         return Task.CompletedTask;
+    }
+
+    public Task OnStartAsync(Container container, DateTimeOffset startedAt) {
+        var logCategories = _configuration.Config?.DockerCategory.LogCategories
+            .Where(category => (category.Names?.Contains(container.Name) ?? false) || (!string.IsNullOrEmpty(category.Label) && container.Labels.ContainsKey(category.Label)))
+            .ToList();
+        if (logCategories == null || logCategories.Count == 0) {
+            return Task.CompletedTask;
+        }
+
+        _ = DockerClient.Containers.GetLogsAsync(container.Id, container.Tty, new ContainerLogsParameters {
+            ShowStdout = true,
+            ShowStderr = true,
+            Since = $"{startedAt.ToUnixTimeSeconds()}",
+            Follow = true
+        }, message => OnLogAsync(container, logCategories, message));
+
+        return Task.CompletedTask;
+    }
+
+    private async Task OnLogAsync(Container container, List<LogCategory> logCategories, string message) {
+        foreach (var logCategory in logCategories) {
+            var match = logCategory.Regex?.Match(message);
+            if (match is not { Success: true }) {
+                continue;
+            }
+
+            var result = !string.IsNullOrEmpty(logCategory.Replacement)
+                ? match.Result(logCategory.Replacement)
+                : message;
+
+            await _notificationService.NotifyAsync(provider => provider.SendLogAsync(container, result));
+        }
     }
 
     private async void OnMessageAsync(Message message) {
