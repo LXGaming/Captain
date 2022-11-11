@@ -1,4 +1,4 @@
-﻿FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:6.0-alpine AS build
+﻿FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
 ARG TARGETPLATFORM
 WORKDIR /src
 
@@ -20,7 +20,7 @@ RUN case "$TARGETPLATFORM" in \
     esac && \
     dotnet publish --configuration Release --no-restore --output /app --runtime $RUNTIME --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:SuppressTrimAnalysisWarnings=true
 
-FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-alpine
+FROM mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine
 RUN apk add --no-cache tzdata
 WORKDIR /app
 COPY --from=build /app ./
