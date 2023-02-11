@@ -65,9 +65,9 @@ public class DiscordNotificationProvider : IHostedService, INotificationProvider
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(state ? Color.Green : Color.Red);
         embedBuilder.WithTitle("Health");
-        embedBuilder.AddField("Id", $"```{container.ShortId}```", true);
-        embedBuilder.AddField("Name", $"```{container.Name}```", true);
-        embedBuilder.AddField("Status", $"```{(state ? "Healthy" : "Unhealthy")}```", true);
+        embedBuilder.AddField("Id", $"```\n{container.ShortId}\n```", true);
+        embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
+        embedBuilder.AddField("Status", $"```\n{(state ? "Healthy" : "Unhealthy")}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
         return SendAlertAsync(embedBuilder.Build());
     }
@@ -76,9 +76,9 @@ public class DiscordNotificationProvider : IHostedService, INotificationProvider
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);
         embedBuilder.WithTitle("Log");
-        embedBuilder.AddField("Id", $"```{container.ShortId}```", true);
-        embedBuilder.AddField("Name", $"```{container.Name}```", true);
-        embedBuilder.AddField("Message", $"```{message}```", true);
+        embedBuilder.AddField("Id", $"```\n{container.ShortId}\n```", true);
+        embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
+        embedBuilder.AddField("Message", $"```\n{message}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
         return SendAlertAsync(embedBuilder.Build());
     }
@@ -87,9 +87,9 @@ public class DiscordNotificationProvider : IHostedService, INotificationProvider
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);
         embedBuilder.WithTitle("Restart Loop Detected");
-        embedBuilder.AddField("Id", $"```{container.ShortId}```", true);
-        embedBuilder.AddField("Name", $"```{container.Name}```", true);
-        embedBuilder.AddField("Exit Code", $"```{exitCode}```", true);
+        embedBuilder.AddField("Id", $"```\n{container.ShortId}\n```", true);
+        embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
+        embedBuilder.AddField("Exit Code", $"```\n{exitCode}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
         return SendAlertAsync(embedBuilder.Build());
     }
