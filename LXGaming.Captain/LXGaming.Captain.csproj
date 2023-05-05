@@ -13,12 +13,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Discord.Net.Webhook" Version="3.9.0" />
-      <PackageReference Include="Docker.DotNet" Version="3.125.12" />
+      <PackageReference Include="Discord.Net.Webhook" Version="3.10.0" />
+      <PackageReference Include="Docker.DotNet" Version="3.125.14" />
       <PackageReference Include="Humanizer.Core" Version="2.14.1" />
       <PackageReference Include="LXGaming.Common.Hosting" Version="1.4.5" />
       <PackageReference Include="LXGaming.Common.Serilog" Version="1.4.5" />
-      <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
       <PackageReference Include="Microsoft.Net.ILLink.Tasks" Version="8.0.100-1.22612.2" />
       <PackageReference Include="Serilog.Extensions.Hosting" Version="5.0.1" />
       <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
