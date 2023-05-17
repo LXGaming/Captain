@@ -3,7 +3,6 @@ ARG TARGETPLATFORM
 WORKDIR /src
 
 COPY *.sln .
-COPY *.config .
 COPY LXGaming.Captain/*.csproj ./LXGaming.Captain/
 RUN case "$TARGETPLATFORM" in \
         linux/amd64) RUNTIME=linux-musl-x64 ;; \
