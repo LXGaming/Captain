@@ -39,6 +39,9 @@ public class MultiplexedStream : Stream {
 
         while (_remaining == 0) {
             (_type, _remaining) = ReadHeader();
+            if (_type == -1) {
+                return 0;
+            }
         }
 
         var read = _stream.Read(buffer, offset, Math.Min(count, _remaining));
