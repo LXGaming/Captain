@@ -12,7 +12,8 @@ public class LogCategory {
     [JsonPropertyName("names")]
     public ISet<string>? Names { get; init; }
 
-    [JsonPropertyName("pattern"), JsonConverter(typeof(RegexConverter))]
+    [JsonPropertyName("pattern")]
+    [JsonConverter(typeof(RegexConverter))]
     public Regex? Regex { get; init; }
 
     [JsonPropertyName("replacement")]
