@@ -10,7 +10,7 @@ public class LogCategory {
     public string? Label { get; init; }
 
     [JsonPropertyName("names")]
-    public ISet<string>? Names { get; init; }
+    public HashSet<string>? Names { get; init; }
 
     [JsonPropertyName("pattern")]
     [JsonConverter(typeof(RegexConverter))]

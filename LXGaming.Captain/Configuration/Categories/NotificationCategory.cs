@@ -17,5 +17,5 @@ public class NotificationCategory {
     public string? AvatarUrl { get; init; }
 
     [JsonPropertyName("mentions")]
-    public ISet<string> Mentions { get; init; } = new HashSet<string>();
+    public HashSet<string> Mentions { get; init; } = [];
 }

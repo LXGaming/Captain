@@ -1,40 +1,32 @@
 ﻿namespace LXGaming.Captain.Services.Docker.Utilities.IO;
 
-public class MultiplexedStream : Stream {
+public class MultiplexedStream(Stream stream, bool multiplexed) : Stream {
 
-    private readonly Stream _stream;
-    private readonly byte[] _header;
-    private readonly bool _multiplexed;
+    private readonly byte[] _header = multiplexed ? new byte[8] : Array.Empty<byte>();
     private int _type;
     private int _remaining;
     private bool _disposed;
 
-    public MultiplexedStream(Stream stream, bool multiplexed) {
-        _stream = stream;
-        _header = multiplexed ? new byte[8] : Array.Empty<byte>();
-        _multiplexed = multiplexed;
-    }
+    public override bool CanRead => stream.CanRead;
 
-    public override bool CanRead => _stream.CanRead;
+    public override bool CanSeek => stream.CanSeek;
 
-    public override bool CanSeek => _stream.CanSeek;
+    public override bool CanWrite => stream.CanWrite;
 
-    public override bool CanWrite => _stream.CanWrite;
-
-    public override long Length => _stream.Length;
+    public override long Length => stream.Length;
 
     public override long Position {
-        get => _stream.Position;
-        set => _stream.Position = value;
+        get => stream.Position;
+        set => stream.Position = value;
     }
 
     public override void Flush() {
-        _stream.Flush();
+        stream.Flush();
     }
 
     public override int Read(byte[] buffer, int offset, int count) {
-        if (!_multiplexed) {
-            return _stream.Read(buffer, offset, count);
+        if (!multiplexed) {
+            return stream.Read(buffer, offset, count);
         }
 
         while (_remaining == 0) {
@@ -44,7 +36,7 @@ public class MultiplexedStream : Stream {
             }
         }
 
-        var read = _stream.Read(buffer, offset, Math.Min(count, _remaining));
+        var read = stream.Read(buffer, offset, Math.Min(count, _remaining));
         if (read == 0) {
             throw new EndOfStreamException();
         }
@@ -54,21 +46,21 @@ public class MultiplexedStream : Stream {
     }
 
     public override long Seek(long offset, SeekOrigin origin) {
-        return _stream.Seek(offset, origin);
+        return stream.Seek(offset, origin);
     }
 
     public override void SetLength(long value) {
-        _stream.SetLength(value);
+        stream.SetLength(value);
     }
 
     public override void Write(byte[] buffer, int offset, int count) {
-        _stream.Write(buffer, offset, count);
+        stream.Write(buffer, offset, count);
     }
 
     private (int type, int length) ReadHeader() {
         var index = 0;
         while (index < _header.Length) {
-            var read = _stream.Read(_header, index, _header.Length - index);
+            var read = stream.Read(_header, index, _header.Length - index);
             if (read == 0) {
                 if (index == 0) {
                     return (-1, 0);
@@ -88,7 +80,7 @@ public class MultiplexedStream : Stream {
     protected override void Dispose(bool disposing) {
         if (!_disposed) {
             if (disposing) {
-                _stream.Dispose();
+                stream.Dispose();
             }
 
             _disposed = true;

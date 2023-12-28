@@ -1,16 +1,10 @@
 ﻿namespace LXGaming.Captain.Models;
 
-public class Label<T> where T : IConvertible {
+public class Label<T>(string id, string name, T defaultValue) where T : IConvertible {
 
-    public string Id { get; init; }
+    public string Id { get; } = id;
 
-    public string Name { get; init; }
+    public string Name { get; } = name;
 
-    public T DefaultValue { get; init; }
-
-    public Label(string id, string name, T defaultValue) {
-        Id = id;
-        Name = name;
-        DefaultValue = defaultValue;
-    }
+    public T DefaultValue { get; } = defaultValue;
 }

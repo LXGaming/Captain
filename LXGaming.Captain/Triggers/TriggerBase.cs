@@ -1,17 +1,11 @@
 ﻿namespace LXGaming.Captain.Triggers;
 
-public abstract class TriggerBase {
+public abstract class TriggerBase(int threshold, TimeSpan? resetAfter, TimeSpan? fireInterval) {
 
-    public int Threshold { get; }
-    public TimeSpan? ResetAfter { get; }
-    public TimeSpan? FireInterval { get; }
+    public int Threshold { get; } = threshold;
+    public TimeSpan? ResetAfter { get; } = resetAfter;
+    public TimeSpan? FireInterval { get; } = fireInterval;
     public DateTime? LastFiredAt { get; protected set; }
-
-    protected TriggerBase(int threshold, TimeSpan? resetAfter, TimeSpan? fireInterval) {
-        Threshold = threshold;
-        ResetAfter = resetAfter;
-        FireInterval = fireInterval;
-    }
 
     public abstract bool Execute();
 

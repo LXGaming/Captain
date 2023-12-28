@@ -3,21 +3,22 @@ using LXGaming.Captain.Triggers;
 
 namespace LXGaming.Captain.Services.Docker.Models;
 
-public class Container {
+public class Container(
+    string id,
+    string name,
+    IDictionary<string, string> labels,
+    bool tty,
+    TriggerBase restartTrigger) {
 
     public string ShortId => Id.Truncate(12, "");
 
-    public readonly string Id;
-    public readonly string Name;
-    public readonly IDictionary<string, string> Labels;
-    public readonly bool Tty;
-    public readonly TriggerBase RestartTrigger;
+    public string Id { get; } = id;
 
-    public Container(string id, string name, IDictionary<string, string> labels, bool tty, TriggerBase restartTrigger) {
-        Id = id;
-        Name = name;
-        Labels = labels;
-        Tty = tty;
-        RestartTrigger = restartTrigger;
-    }
+    public string Name { get; } = name;
+
+    public IDictionary<string, string> Labels { get; } = labels;
+
+    public bool Tty { get; } = tty;
+
+    public TriggerBase RestartTrigger { get; } = restartTrigger;
 }

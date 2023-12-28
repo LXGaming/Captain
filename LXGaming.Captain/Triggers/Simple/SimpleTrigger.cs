@@ -1,12 +1,12 @@
 ﻿namespace LXGaming.Captain.Triggers.Simple;
 
-public class SimpleTrigger : TriggerBase {
+public class SimpleTrigger(
+    int threshold,
+    TimeSpan? resetAfter,
+    TimeSpan? fireInterval) : TriggerBase(threshold, resetAfter, fireInterval) {
 
     public int Count { get; protected set; }
     public DateTime? LastUpdatedAt { get; protected set; }
-
-    public SimpleTrigger(int threshold, TimeSpan? resetAfter, TimeSpan? fireInterval) : base(threshold, resetAfter, fireInterval) {
-    }
 
     public override bool Execute() {
         var now = DateTime.UtcNow;

@@ -9,7 +9,7 @@ public class DockerCategory {
     public HealthCategory HealthCategory { get; init; } = new();
 
     [JsonPropertyName("logs")]
-    public List<LogCategory> LogCategories { get; init; } = new();
+    public List<LogCategory> LogCategories { get; init; } = [];
 
     [JsonPropertyName("restart")]
     public RestartCategory RestartCategory { get; init; } = new();

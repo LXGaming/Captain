@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using Docker.DotNet;
 using Docker.DotNet.Models;
-using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Configuration.Categories.Docker;
 using LXGaming.Captain.Models;
 using LXGaming.Captain.Services.Docker.Listeners;
@@ -10,34 +9,27 @@ using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Services.Notification;
 using LXGaming.Captain.Triggers.Simple;
 using LXGaming.Common.Hosting;
+using LXGaming.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using CaptainConfig = LXGaming.Captain.Configuration.Config;
 
 namespace LXGaming.Captain.Services.Docker;
 
 [Service(ServiceLifetime.Singleton)]
-public class DockerService : IHostedService {
+public class DockerService(
+    IConfiguration configuration,
+    ILogger<DockerService> logger,
+    NotificationService notificationService,
+    IServiceProvider serviceProvider) : IHostedService {
 
     public DockerClient DockerClient { get; private set; } = null!;
 
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<DockerService> _logger;
-    private readonly NotificationService _notificationService;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly CancellationTokenSource _cancellationTokenSource;
-    private readonly IDictionary<string, Container> _containers;
-    private readonly SemaphoreSlim _semaphore;
-
-    public DockerService(IConfiguration configuration, ILogger<DockerService> logger, NotificationService notificationService, IServiceProvider serviceProvider) {
-        _configuration = configuration;
-        _logger = logger;
-        _notificationService = notificationService;
-        _serviceProvider = serviceProvider;
-        _cancellationTokenSource = new CancellationTokenSource();
-        _containers = new Dictionary<string, Container>();
-        _semaphore = new SemaphoreSlim(1, 1);
-    }
+    private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<CaptainConfig>();
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly Dictionary<string, Container> _containers = new();
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
     public async Task StartAsync(CancellationToken cancellationToken) {
         DockerClient = new DockerClientConfiguration().CreateClient();
@@ -46,7 +38,7 @@ public class DockerService : IHostedService {
             new ContainerEventsParameters(),
             new Progress<Message>(OnMessageAsync),
             _cancellationTokenSource.Token).ContinueWith(task => {
-            _logger.LogError(task.Exception, "Encountered an error while monitoring events");
+            logger.LogError(task.Exception, "Encountered an error while monitoring events");
         }, TaskContinuationOptions.OnlyOnFaulted);
 
         var parameters = new ContainersListParameters {
@@ -61,7 +53,7 @@ public class DockerService : IHostedService {
         try {
             _cancellationTokenSource.Cancel();
         } catch (AggregateException ex) {
-            _logger.LogError(ex, "Encountered an error while performing cancellation");
+            logger.LogError(ex, "Encountered an error while performing cancellation");
         }
 
         _cancellationTokenSource.Dispose();
@@ -72,13 +64,13 @@ public class DockerService : IHostedService {
 
     public async Task RegisterAsync(string id) {
         if (_containers.TryGetValue(id, out var existingContainer)) {
-            _logger.LogWarning("Container {Name} ({Id}) is already registered", existingContainer.Name, existingContainer.ShortId);
+            logger.LogWarning("Container {Name} ({Id}) is already registered", existingContainer.Name, existingContainer.ShortId);
             return;
         }
 
-        var dockerCategory = _configuration.Config?.DockerCategory;
+        var dockerCategory = _config.Value?.DockerCategory;
         if (dockerCategory == null) {
-            _logger.LogWarning("DockerCategory is unavailable");
+            logger.LogWarning("DockerCategory is unavailable");
             return;
         }
 
@@ -103,7 +95,7 @@ public class DockerService : IHostedService {
             await OnStartAsync(container, DateTimeOffset.UtcNow);
         }
 
-        _logger.LogInformation("Registered {Name} ({Id})", container.Name, container.ShortId);
+        logger.LogInformation("Registered {Name} ({Id})", container.Name, container.ShortId);
     }
 
     public Task UnregisterAsync(string id) {
@@ -111,12 +103,12 @@ public class DockerService : IHostedService {
             return Task.CompletedTask;
         }
 
-        _logger.LogInformation("Unregistered {Name} ({Id})", existingContainer.Name, existingContainer.ShortId);
+        logger.LogInformation("Unregistered {Name} ({Id})", existingContainer.Name, existingContainer.ShortId);
         return Task.CompletedTask;
     }
 
     public Task OnStartAsync(Container container, DateTimeOffset startedAt) {
-        var logCategories = _configuration.Config?.DockerCategory.LogCategories
+        var logCategories = _config.Value?.DockerCategory.LogCategories
             .Where(category => (category.Names?.Contains(container.Name) ?? false) || (!string.IsNullOrEmpty(category.Label) && container.Labels.ContainsKey(category.Label)))
             .ToList();
         if (logCategories == null || logCategories.Count == 0) {
@@ -129,7 +121,7 @@ public class DockerService : IHostedService {
             Since = $"{startedAt.ToUnixTimeSeconds()}",
             Follow = true
         }, message => OnLogAsync(container, logCategories, message)).ContinueWith(task => {
-            _logger.LogError(task.Exception, "Encountered an error while monitoring logs");
+            logger.LogError(task.Exception, "Encountered an error while monitoring logs");
         }, TaskContinuationOptions.OnlyOnFaulted);
 
         return Task.CompletedTask;
@@ -146,7 +138,7 @@ public class DockerService : IHostedService {
                 ? match.Result(logCategory.Replacement)
                 : message;
 
-            await _notificationService.NotifyAsync(provider => provider.SendLogAsync(container, result));
+            await notificationService.NotifyAsync(provider => provider.SendLogAsync(container, result));
         }
     }
 
@@ -154,13 +146,13 @@ public class DockerService : IHostedService {
         await _semaphore.WaitAsync(_cancellationTokenSource.Token);
 
         try {
-            foreach (var listener in _serviceProvider.GetServices<IListener>()) {
+            foreach (var listener in serviceProvider.GetServices<IListener>()) {
                 try {
                     if (string.Equals(message.Type, listener.Type)) {
                         await listener.ExecuteAsync(message);
                     }
                 } catch (Exception ex) {
-                    _logger.LogError(ex, "Encountered an error while executing {Type}", listener.GetType());
+                    logger.LogError(ex, "Encountered an error while executing {Type}", listener.GetType());
                 }
             }
         } finally {
@@ -189,7 +181,7 @@ public class DockerService : IHostedService {
             try {
                 return (T) Convert.ChangeType(pair.Value, typeof(T), CultureInfo.InvariantCulture);
             } catch (Exception ex) {
-                _logger.LogWarning(ex, "Encountered an error while converting {Key}={Value} to {Type}", pair.Key, pair.Value, typeof(T));
+                logger.LogWarning(ex, "Encountered an error while converting {Key}={Value} to {Type}", pair.Key, pair.Value, typeof(T));
                 return defaultValue;
             }
         }

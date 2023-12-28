@@ -2,13 +2,12 @@
 
 namespace LXGaming.Captain.Triggers.Tracking;
 
-public class TrackingTrigger : TriggerBase, IEnumerable<DateTime> {
+public class TrackingTrigger(
+    int threshold,
+    TimeSpan? resetAfter,
+    TimeSpan? fireInterval) : TriggerBase(threshold, resetAfter, fireInterval), IEnumerable<DateTime> {
 
-    private readonly Queue<DateTime> _queue;
-
-    public TrackingTrigger(int threshold, TimeSpan? resetAfter, TimeSpan? fireInterval) : base(threshold, resetAfter, fireInterval) {
-        _queue = new Queue<DateTime>();
-    }
+    private readonly Queue<DateTime> _queue = new();
 
     public override bool Execute() {
         var now = DateTime.UtcNow;
