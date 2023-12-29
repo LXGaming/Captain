@@ -4,6 +4,7 @@ using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Services.Notification;
 using LXGaming.Common.Hosting;
 using LXGaming.Configuration;
+using LXGaming.Configuration.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using CaptainConfig = LXGaming.Captain.Configuration.Config;
@@ -19,7 +20,7 @@ public class ContainerListener(
 
     public string Type => "container";
 
-    private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<CaptainConfig>();
+    private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<IProvider<CaptainConfig>>();
 
     public Task ExecuteAsync(Message message) {
         var (key, value) = message.ParseAction();

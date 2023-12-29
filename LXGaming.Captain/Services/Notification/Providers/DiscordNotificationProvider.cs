@@ -5,6 +5,7 @@ using LXGaming.Captain.Services.Docker.Models;
 using LXGaming.Captain.Utilities;
 using LXGaming.Common.Hosting;
 using LXGaming.Configuration;
+using LXGaming.Configuration.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -16,7 +17,7 @@ public class DiscordNotificationProvider(
     IConfiguration configuration,
     ILogger<DiscordNotificationProvider> logger) : IHostedService, INotificationProvider {
 
-    private readonly IProvider<Config> _config = configuration.GetRequiredProvider<Config>();
+    private readonly IProvider<Config> _config = configuration.GetRequiredProvider<IProvider<Config>>();
     private DiscordWebhookClient? _discordClient;
 
     public Task StartAsync(CancellationToken cancellationToken) {

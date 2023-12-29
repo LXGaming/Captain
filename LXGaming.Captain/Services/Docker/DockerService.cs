@@ -10,6 +10,7 @@ using LXGaming.Captain.Services.Notification;
 using LXGaming.Captain.Triggers.Simple;
 using LXGaming.Common.Hosting;
 using LXGaming.Configuration;
+using LXGaming.Configuration.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -26,7 +27,7 @@ public class DockerService(
 
     public DockerClient DockerClient { get; private set; } = null!;
 
-    private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<CaptainConfig>();
+    private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<IProvider<CaptainConfig>>();
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly Dictionary<string, Container> _containers = new();
     private readonly SemaphoreSlim _semaphore = new(1, 1);

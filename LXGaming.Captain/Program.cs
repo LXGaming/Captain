@@ -5,8 +5,8 @@ using LXGaming.Captain.Configuration;
 using LXGaming.Common.Hosting;
 using LXGaming.Common.Serilog;
 using LXGaming.Configuration;
-using LXGaming.Configuration.Json;
-using Microsoft.Extensions.DependencyInjection;
+using LXGaming.Configuration.File.Json;
+using LXGaming.Configuration.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
@@ -35,10 +35,10 @@ try {
     );
 
     var builder = Host.CreateDefaultBuilder(args);
+    builder.UseConfiguration(configuration);
     builder.UseSerilog();
 
     builder.ConfigureServices(services => {
-        services.AddSingleton<IConfiguration>(configuration);
         services.AddAllServices(Assembly.GetExecutingAssembly());
     });
 
