@@ -11,8 +11,6 @@ version: "3"
 services:
   captain:
     container_name: captain
-    environment:
-      - TZ=Pacific/Auckland
     image: lxgaming/captain:latest
     restart: unless-stopped
     volumes:
