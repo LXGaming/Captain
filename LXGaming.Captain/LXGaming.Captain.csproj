@@ -9,7 +9,7 @@
     <VersionPrefix>1.3.0</VersionPrefix>
     <Authors>Alex Thomson</Authors>
     <Product>Captain</Product>
-    <Copyright>Copyright © Alex Thomson</Copyright>
+    <Copyright>© Alex Thomson. All rights reserved.</Copyright>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(CI)' == 'true' or '$(DOTNET_RUNNING_IN_CONTAINER)' == 'true'">
