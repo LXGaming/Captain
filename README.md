@@ -7,7 +7,6 @@
 ### docker-compose
 Download and use [config.json](https://raw.githubusercontent.com/LXGaming/Captain/main/LXGaming.Captain/config.json)
 ```yaml
-version: "3"
 services:
   captain:
     container_name: captain
