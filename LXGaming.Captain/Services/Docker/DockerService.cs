@@ -110,7 +110,7 @@ public class DockerService(
 
     public Task OnStartAsync(Container container, DateTimeOffset startedAt) {
         var logCategories = _config.Value?.DockerCategory.LogCategories
-            .Where(category => (category.Names?.Contains(container.Name) ?? false) || (!string.IsNullOrEmpty(category.Label) && container.Labels.ContainsKey(category.Label)))
+            .Where(category => category.Names?.Contains(container.Name) == true || (!string.IsNullOrEmpty(category.Label) && container.Labels.ContainsKey(category.Label)))
             .ToList();
         if (logCategories == null || logCategories.Count == 0) {
             return Task.CompletedTask;
