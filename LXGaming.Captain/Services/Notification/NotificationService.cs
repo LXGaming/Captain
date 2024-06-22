@@ -9,11 +9,11 @@ namespace LXGaming.Captain.Services.Notification;
 public class NotificationService(ILogger<NotificationService> logger, IServiceProvider serviceProvider) {
 
     public async Task NotifyAsync(Func<INotificationProvider, Task> func) {
-        foreach (var notification in serviceProvider.GetServices<INotificationProvider>()) {
+        foreach (var notificationProvider in serviceProvider.GetServices<INotificationProvider>()) {
             try {
-                await func(notification);
+                await func(notificationProvider);
             } catch (Exception ex) {
-                logger.LogError(ex, "Encountered an error while notifying {Name}", notification.GetType().Name);
+                logger.LogError(ex, "Encountered an error while notifying {Name}", notificationProvider.GetType().Name);
             }
         }
     }
