@@ -22,17 +22,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Webhook" Version="3.13.1" />
+    <PackageReference Include="Discord.Net.Webhook" Version="3.15.3" />
     <PackageReference Include="Docker.DotNet" Version="3.125.15" />
     <PackageReference Include="Humanizer.Core" Version="2.14.1" />
-    <PackageReference Include="LXGaming.Common" Version="1.8.4" />
-    <PackageReference Include="LXGaming.Common.Hosting" Version="1.8.4" />
-    <PackageReference Include="LXGaming.Common.Serilog" Version="1.8.4" />
+    <PackageReference Include="LXGaming.Common" Version="1.8.6" />
+    <PackageReference Include="LXGaming.Common.Hosting" Version="1.8.6" />
+    <PackageReference Include="LXGaming.Common.Serilog" Version="1.8.6" />
     <PackageReference Include="LXGaming.Configuration.Hosting" Version="1.2.2" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File.Archive" Version="1.0.5" />
   </ItemGroup>
 
