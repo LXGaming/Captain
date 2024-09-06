@@ -15,10 +15,11 @@ namespace LXGaming.Captain.Services.Notification.Providers;
 [Service(ServiceLifetime.Singleton, typeof(INotificationProvider))]
 public class DiscordNotificationProvider(
     IConfiguration configuration,
-    ILogger<DiscordNotificationProvider> logger) : IHostedService, INotificationProvider {
+    ILogger<DiscordNotificationProvider> logger) : IHostedService, INotificationProvider, IDisposable {
 
     private readonly IProvider<Config> _config = configuration.GetRequiredProvider<IProvider<Config>>();
     private DiscordWebhookClient? _discordClient;
+    private bool _disposed;
 
     public Task StartAsync(CancellationToken cancellationToken) {
         var category = _config.Value?.NotificationCategory;
@@ -41,7 +42,6 @@ public class DiscordNotificationProvider(
     }
 
     public Task StopAsync(CancellationToken cancellationToken) {
-        _discordClient?.Dispose();
         return Task.CompletedTask;
     }
 
@@ -57,7 +57,7 @@ public class DiscordNotificationProvider(
         embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
         embedBuilder.AddField("Status", $"```\n{(state ? "Healthy" : "Unhealthy")}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
-        return SendAlertAsync(new[] { embedBuilder.Build() });
+        return SendAlertAsync([embedBuilder.Build()]);
     }
 
     public Task SendLogAsync(Container container, string message) {
@@ -72,7 +72,7 @@ public class DiscordNotificationProvider(
         embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
         embedBuilder.AddField("Message", $"```\n{message}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
-        return SendAlertAsync(new[] { embedBuilder.Build() });
+        return SendAlertAsync([embedBuilder.Build()]);
     }
 
     public Task SendRestartLoopAsync(Container container, string exitCode) {
@@ -87,7 +87,7 @@ public class DiscordNotificationProvider(
         embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
         embedBuilder.AddField("Exit Code", $"```\n{exitCode}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
-        return SendAlertAsync(new[] { embedBuilder.Build() });
+        return SendAlertAsync([embedBuilder.Build()]);
     }
 
     private Task<ulong> SendAlertAsync(IEnumerable<Embed>? embeds = null) {
@@ -96,10 +96,17 @@ public class DiscordNotificationProvider(
             return SendMessageAsync(null, embeds);
         }
 
-        return SendMessageAsync(string.Join(' ', mentions), embeds);
+        var text = string.Join(' ', mentions);
+        if (string.IsNullOrWhiteSpace(text)) {
+            return SendMessageAsync(null, embeds);
+        }
+
+        return SendMessageAsync(text, embeds);
     }
 
     private Task<ulong> SendMessageAsync(string? text = null, IEnumerable<Embed>? embeds = null) {
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
         var category = _config.Value?.NotificationCategory;
         if (category == null) {
             throw new InvalidOperationException("NotificationCategory is unavailable");
@@ -112,8 +119,25 @@ public class DiscordNotificationProvider(
         return _discordClient.SendMessageAsync(
             text: text,
             embeds: embeds,
-            username: category.Username,
-            avatarUrl: category.AvatarUrl
+            username: !string.IsNullOrEmpty(category.Username) ? category.Username : null,
+            avatarUrl: !string.IsNullOrEmpty(category.AvatarUrl) ? category.AvatarUrl : null
         );
+    }
+
+    public void Dispose() {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing) {
+        if (_disposed) {
+            return;
+        }
+
+        if (disposing) {
+            _discordClient?.Dispose();
+        }
+
+        _disposed = true;
     }
 }
