@@ -1,5 +1,5 @@
 ﻿using LXGaming.Captain.Services.Docker.Models;
-using LXGaming.Common.Hosting;
+using LXGaming.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 

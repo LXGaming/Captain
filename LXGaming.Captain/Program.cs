@@ -1,12 +1,11 @@
 ﻿using System.IO.Compression;
-using System.Reflection;
 using System.Text.Json;
 using LXGaming.Captain.Configuration;
-using LXGaming.Common.Hosting;
 using LXGaming.Common.Serilog;
 using LXGaming.Configuration;
 using LXGaming.Configuration.File.Json;
 using LXGaming.Configuration.Hosting;
+using LXGaming.Hosting.Generated;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
@@ -39,7 +38,7 @@ try {
     builder.UseSerilog();
 
     builder.ConfigureServices(services => {
-        services.AddAllServices(Assembly.GetExecutingAssembly());
+        services.AddAllServices();
     });
 
     var host = builder.Build();

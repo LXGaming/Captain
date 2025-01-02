@@ -2,9 +2,9 @@
 using LXGaming.Captain.Models;
 using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Services.Notification;
-using LXGaming.Common.Hosting;
 using LXGaming.Configuration;
 using LXGaming.Configuration.Generic;
+using LXGaming.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using CaptainConfig = LXGaming.Captain.Configuration.Config;
