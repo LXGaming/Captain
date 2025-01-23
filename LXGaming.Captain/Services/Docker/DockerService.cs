@@ -10,7 +10,6 @@ using LXGaming.Captain.Services.Notification;
 using LXGaming.Captain.Triggers.Simple;
 using LXGaming.Configuration;
 using LXGaming.Configuration.Generic;
-using LXGaming.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -18,48 +17,42 @@ using CaptainConfig = LXGaming.Captain.Configuration.Config;
 
 namespace LXGaming.Captain.Services.Docker;
 
-[Service(ServiceLifetime.Singleton)]
 public class DockerService(
     IConfiguration configuration,
+    IDockerClient dockerClient,
     ILogger<DockerService> logger,
     NotificationService notificationService,
-    IServiceProvider serviceProvider) : IHostedService {
-
-    public DockerClient DockerClient { get; private set; } = null!;
+    IServiceProvider serviceProvider) : IHostedService, IDisposable {
 
     private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<IProvider<CaptainConfig>>();
-    private readonly CancellationTokenSource _cancellationTokenSource = new();
+    private readonly CancellationTokenSource _cancelSource = new();
     private readonly Dictionary<string, Container> _containers = new();
-    private readonly SemaphoreSlim _semaphore = new(1, 1);
+    private readonly SemaphoreSlim _lock = new(1, 1);
+    private bool _disposed;
 
     public async Task StartAsync(CancellationToken cancellationToken) {
-        DockerClient = new DockerClientConfiguration().CreateClient();
-
-        _ = DockerClient.System.MonitorEventsAsync(
+        _ = dockerClient.System.MonitorEventsAsync(
             new ContainerEventsParameters(),
             new Progress<Message>(OnMessageAsync),
-            _cancellationTokenSource.Token).ContinueWith(task => {
+            _cancelSource.Token).ContinueWith(task => {
             logger.LogError(task.Exception, "Encountered an error while monitoring events");
         }, TaskContinuationOptions.OnlyOnFaulted);
 
         var parameters = new ContainersListParameters {
             All = true
         };
-        foreach (var container in await DockerClient.Containers.ListContainersAsync(parameters, cancellationToken)) {
+        foreach (var container in await dockerClient.Containers.ListContainersAsync(parameters, cancellationToken)) {
             await RegisterAsync(container.ID);
         }
     }
 
     public Task StopAsync(CancellationToken cancellationToken) {
         try {
-            _cancellationTokenSource.Cancel();
+            _cancelSource.Cancel();
         } catch (AggregateException ex) {
             logger.LogError(ex, "Encountered an error while performing cancellation");
         }
 
-        _cancellationTokenSource.Dispose();
-        _semaphore.Dispose();
-        DockerClient.Dispose();
         return Task.CompletedTask;
     }
 
@@ -75,7 +68,7 @@ public class DockerService(
             return;
         }
 
-        var inspect = await DockerClient.Containers.InspectContainerAsync(id);
+        var inspect = await dockerClient.Containers.InspectContainerAsync(id);
         if (!GetLabelValue(inspect.Config.Labels, Labels.Enabled)) {
             return;
         }
@@ -116,7 +109,7 @@ public class DockerService(
             return Task.CompletedTask;
         }
 
-        _ = DockerClient.Containers.GetLogsAsync(container.Id, container.Tty, new ContainerLogsParameters {
+        _ = dockerClient.Containers.GetLogsAsync(container.Id, container.Tty, new ContainerLogsParameters {
             ShowStdout = true,
             ShowStderr = true,
             Since = $"{startedAt.ToUnixTimeSeconds()}",
@@ -144,7 +137,7 @@ public class DockerService(
     }
 
     private async void OnMessageAsync(Message message) {
-        await _semaphore.WaitAsync(_cancellationTokenSource.Token);
+        await _lock.WaitAsync(_cancelSource.Token);
 
         try {
             foreach (var listener in serviceProvider.GetServices<IListener>()) {
@@ -157,19 +150,19 @@ public class DockerService(
                 }
             }
         } finally {
-            _semaphore.Release();
+            _lock.Release();
         }
     }
 
     public Container? GetContainer(string key) {
-        return _containers.TryGetValue(key, out var value) ? value : null;
+        return _containers.GetValueOrDefault(key);
     }
 
-    public T GetLabelValue<T>(IDictionary<string, string> dictionary, Label<T> label, T? defaultValue = default) where T : class, IConvertible {
+    public T GetLabelValue<T>(IDictionary<string, string> dictionary, Label<T> label, T? defaultValue = null) where T : class, IConvertible {
         return GetLabelValue(dictionary, label.Id, defaultValue ?? label.DefaultValue);
     }
 
-    public T GetLabelValue<T>(IDictionary<string, string> dictionary, Label<T> label, T? defaultValue = default) where T : struct, IConvertible {
+    public T GetLabelValue<T>(IDictionary<string, string> dictionary, Label<T> label, T? defaultValue = null) where T : struct, IConvertible {
         return GetLabelValue(dictionary, label.Id, defaultValue ?? label.DefaultValue);
     }
 
@@ -188,5 +181,23 @@ public class DockerService(
         }
 
         return defaultValue;
+    }
+
+    public void Dispose() {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing) {
+        if (_disposed) {
+            return;
+        }
+
+        if (disposing) {
+            _cancelSource.Dispose();
+            _lock.Dispose();
+        }
+
+        _disposed = true;
     }
 }

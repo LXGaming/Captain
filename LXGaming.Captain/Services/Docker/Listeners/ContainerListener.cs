@@ -1,4 +1,5 @@
-﻿using Docker.DotNet.Models;
+﻿using Docker.DotNet;
+using Docker.DotNet.Models;
 using LXGaming.Captain.Models;
 using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Services.Notification;
@@ -14,6 +15,7 @@ namespace LXGaming.Captain.Services.Docker.Listeners;
 [Service(ServiceLifetime.Singleton, typeof(IListener))]
 public class ContainerListener(
     IConfiguration configuration,
+    IDockerClient dockerClient,
     DockerService dockerService,
     ILogger<ContainerListener> logger,
     NotificationService notificationService) : IListener {
@@ -57,7 +59,7 @@ public class ContainerListener(
         var restartCategory = _config.Value?.DockerCategory.RestartCategory;
         if (dockerService.GetLabelValue(container.Labels, Labels.RestartAutomaticStop, restartCategory?.AutomaticStop)
             && !dockerService.GetLabelValue(container.Labels, Labels.MonitorOnly)) {
-            await dockerService.DockerClient.Containers.StopContainerAsync(container.Id, new ContainerStopParameters());
+            await dockerClient.Containers.StopContainerAsync(container.Id, new ContainerStopParameters());
         }
 
         await notificationService.NotifyAsync(provider => provider.SendRestartLoopAsync(container, message.Actor.GetExitCode() ?? "Unknown"));

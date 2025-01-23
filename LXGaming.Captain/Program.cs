@@ -1,6 +1,7 @@
 ﻿using System.IO.Compression;
 using System.Text.Json;
 using LXGaming.Captain.Configuration;
+using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Common.Serilog;
 using LXGaming.Configuration;
 using LXGaming.Configuration.File.Json;
@@ -38,6 +39,7 @@ try {
     builder.UseSerilog();
 
     builder.ConfigureServices(services => {
+        services.AddDockerService();
         services.AddAllServices();
     });
 

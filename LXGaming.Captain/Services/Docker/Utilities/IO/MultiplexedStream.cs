@@ -2,7 +2,7 @@
 
 public class MultiplexedStream(Stream stream, bool multiplexed) : Stream {
 
-    private readonly byte[] _header = multiplexed ? new byte[8] : Array.Empty<byte>();
+    private readonly byte[] _header = multiplexed ? new byte[8] : [];
     private int _type;
     private int _remaining;
     private bool _disposed;
