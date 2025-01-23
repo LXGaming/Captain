@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Docker.DotNet;
 using Docker.DotNet.Models;
+using LXGaming.Captain.Services.Docker.Models;
 using Microsoft.Extensions.DependencyInjection;
 using MultiplexedStream = LXGaming.Captain.Services.Docker.Utilities.IO.MultiplexedStream;
 
@@ -49,12 +50,12 @@ public static class DockerExtensions {
         }
     }
 
-    public static (string, string?) ParseAction(this Message message) {
+    public static MessageAction ParseAction(this Message message) {
         var split = message.Action.Split(':', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return split.Length switch {
-            1 => (split[0], null),
-            2 => (split[0], split[1]),
-            _ => (message.Action, null)
+            1 => new MessageAction(split[0], null),
+            2 => new MessageAction(split[0], split[1]),
+            _ => new MessageAction(message.Action, null)
         };
     }
 }

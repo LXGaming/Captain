@@ -25,12 +25,12 @@ public class ContainerListener(
     private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<IProvider<CaptainConfig>>();
 
     public Task ExecuteAsync(Message message) {
-        var (key, value) = message.ParseAction();
-        return key switch {
+        var action = message.ParseAction();
+        return action.Key switch {
             "create" => OnCreateAsync(message),
             "destroy" => OnDestroyAsync(message),
             "die" => OnDieAsync(message),
-            "health_status" => OnHealthStatusAsync(message, value),
+            "health_status" => OnHealthStatusAsync(message, action.Value),
             "start" => OnStartAsync(message),
             _ => Task.CompletedTask
         };
