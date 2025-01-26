@@ -136,6 +136,7 @@ public class DockerService(
         }
     }
 
+    // ReSharper disable once AsyncVoidMethod
     private async void OnMessageAsync(Message message) {
         await _lock.WaitAsync(_cancelSource.Token);
 
