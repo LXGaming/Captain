@@ -37,7 +37,12 @@ public class DiscordNotificationProvider(
             return Task.CompletedTask;
         }
 
-        _discordClient = new DiscordWebhookClient(url);
+        try {
+            _discordClient = new DiscordWebhookClient(url);
+        } catch (Exception ex) {
+            logger.LogError(ex, "Encountered an error while initialising DiscordWebhookClient");
+        }
+
         return Task.CompletedTask;
     }
 
