@@ -51,5 +51,5 @@ try {
     Log.Fatal(ex, "Application failed to initialise");
     return 1;
 } finally {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }
