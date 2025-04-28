@@ -2,6 +2,7 @@
 using Discord.Webhook;
 using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Services.Docker.Models;
+using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Utilities;
 using LXGaming.Configuration;
 using LXGaming.Configuration.Generic;
@@ -58,7 +59,7 @@ public class DiscordNotificationProvider(
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(state ? Color.Green : Color.Red);
         embedBuilder.WithTitle("Health");
-        embedBuilder.AddField("Id", $"```\n{container.ShortId}\n```", true);
+        embedBuilder.AddField("Id", $"```\n{container.GetShortId()}\n```", true);
         embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
         embedBuilder.AddField("Status", $"```\n{(state ? "Healthy" : "Unhealthy")}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
@@ -73,7 +74,7 @@ public class DiscordNotificationProvider(
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);
         embedBuilder.WithTitle("Log");
-        embedBuilder.AddField("Id", $"```\n{container.ShortId}\n```", true);
+        embedBuilder.AddField("Id", $"```\n{container.GetShortId()}\n```", true);
         embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
         embedBuilder.AddField("Message", $"```\n{message}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");
@@ -88,7 +89,7 @@ public class DiscordNotificationProvider(
         var embedBuilder = new EmbedBuilder();
         embedBuilder.WithColor(Color.Orange);
         embedBuilder.WithTitle("Restart Loop Detected");
-        embedBuilder.AddField("Id", $"```\n{container.ShortId}\n```", true);
+        embedBuilder.AddField("Id", $"```\n{container.GetShortId()}\n```", true);
         embedBuilder.AddField("Name", $"```\n{container.Name}\n```", true);
         embedBuilder.AddField("Exit Code", $"```\n{exitCode}\n```", true);
         embedBuilder.WithFooter($"{Constants.Application.Name} v{Constants.Application.Version}");

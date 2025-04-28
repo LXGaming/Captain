@@ -1,5 +1,4 @@
-﻿using Humanizer;
-using LXGaming.Captain.Triggers;
+﻿using LXGaming.Captain.Triggers;
 
 namespace LXGaming.Captain.Services.Docker.Models;
 
@@ -9,8 +8,6 @@ public class Container(
     IDictionary<string, string> labels,
     bool tty,
     TriggerBase restartTrigger) {
-
-    public string ShortId => Id.Truncate(12, "");
 
     public string Id { get; } = id;
 

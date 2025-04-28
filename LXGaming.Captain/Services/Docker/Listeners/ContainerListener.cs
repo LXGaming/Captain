@@ -50,7 +50,7 @@ public class ContainerListener(
             return;
         }
 
-        logger.LogDebug("Container Die: {Name} ({Id})", container.Name, container.ShortId);
+        logger.LogDebug("Container Die: {Name} ({Id})", container.Name, container.GetShortId());
 
         if (!container.RestartTrigger.Execute()) {
             return;
@@ -71,7 +71,7 @@ public class ContainerListener(
             return Task.CompletedTask;
         }
 
-        logger.LogDebug("Container Health Status: {Name} ({Id})", container.Name, container.ShortId);
+        logger.LogDebug("Container Health Status: {Name} ({Id})", container.Name, container.GetShortId());
 
         var healthCategory = _config.Value?.DockerCategory.HealthCategory;
         if (string.Equals(status, "healthy") && dockerService.GetLabelValue(container.Labels, Labels.HealthHealthy, healthCategory?.Healthy)) {
@@ -91,7 +91,7 @@ public class ContainerListener(
             return Task.CompletedTask;
         }
 
-        logger.LogDebug("Container Start: {Name} ({Id})", container.Name, container.ShortId);
+        logger.LogDebug("Container Start: {Name} ({Id})", container.Name, container.GetShortId());
 
         return dockerService.OnStartAsync(container, DateTimeOffset.FromUnixTimeSeconds(message.Time));
     }

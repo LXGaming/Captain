@@ -25,6 +25,10 @@ public static class DockerExtensions {
         return actor.Attributes.TryGetValue(key, out var value) ? value : null;
     }
 
+    public static string GetShortId(this Container container) {
+        return container.Id.Length > 12 ? container.Id[..12] : container.Id;
+    }
+
     public static string GetName(this ContainerInspectResponse response) {
         return response.Name.StartsWith('/') ? response.Name[1..] : response.Name;
     }

@@ -58,7 +58,7 @@ public class DockerService(
 
     public async Task RegisterAsync(string id) {
         if (_containers.TryGetValue(id, out var existingContainer)) {
-            logger.LogWarning("Container {Name} ({Id}) is already registered", existingContainer.Name, existingContainer.ShortId);
+            logger.LogWarning("Container {Name} ({Id}) is already registered", existingContainer.Name, existingContainer.GetShortId());
             return;
         }
 
@@ -89,7 +89,7 @@ public class DockerService(
             await OnStartAsync(container, DateTimeOffset.UtcNow);
         }
 
-        logger.LogInformation("Registered {Name} ({Id})", container.Name, container.ShortId);
+        logger.LogInformation("Registered {Name} ({Id})", container.Name, container.GetShortId());
     }
 
     public Task UnregisterAsync(string id) {
@@ -97,7 +97,7 @@ public class DockerService(
             return Task.CompletedTask;
         }
 
-        logger.LogInformation("Unregistered {Name} ({Id})", existingContainer.Name, existingContainer.ShortId);
+        logger.LogInformation("Unregistered {Name} ({Id})", existingContainer.Name, existingContainer.GetShortId());
         return Task.CompletedTask;
     }
 
