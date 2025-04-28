@@ -31,6 +31,7 @@ public class ContainerListener(
             "destroy" => OnDestroyAsync(message),
             "die" => OnDieAsync(message),
             "health_status" => OnHealthStatusAsync(message, action.Value),
+            "rename" => OnRenameAsync(message),
             "start" => OnStartAsync(message),
             _ => Task.CompletedTask
         };
@@ -80,6 +81,21 @@ public class ContainerListener(
 
         if (string.Equals(status, "unhealthy") && dockerService.GetLabelValue(container.Labels, Labels.HealthUnhealthy, healthCategory?.Unhealthy)) {
             return notificationService.NotifyAsync(provider => provider.SendHealthStatusAsync(container, false));
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private Task OnRenameAsync(Message message) {
+        var container = dockerService.GetContainer(message.Actor.ID);
+        if (container == null) {
+            return Task.CompletedTask;
+        }
+
+        logger.LogDebug("Container Rename: {Name} ({Id})", container.Name, container.GetShortId());
+
+        if (message.Actor.Attributes.TryGetValue("name", out var name) && !string.IsNullOrEmpty(name)) {
+            container.Name = name;
         }
 
         return Task.CompletedTask;
