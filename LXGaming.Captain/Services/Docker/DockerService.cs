@@ -7,6 +7,7 @@ using LXGaming.Captain.Services.Docker.Listeners;
 using LXGaming.Captain.Services.Docker.Models;
 using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Services.Notification;
+using LXGaming.Captain.Triggers;
 using LXGaming.Captain.Triggers.Simple;
 using LXGaming.Configuration;
 using LXGaming.Configuration.Generic;
@@ -62,27 +63,18 @@ public class DockerService(
             return;
         }
 
-        var dockerCategory = _config.Value?.DockerCategory;
-        if (dockerCategory == null) {
-            logger.LogWarning("DockerCategory is unavailable");
-            return;
-        }
-
         var inspect = await dockerClient.Containers.InspectContainerAsync(id);
         if (!GetLabelValue(inspect.Config.Labels, Labels.Enabled)) {
             return;
         }
 
-        var container = new ContainerBuilder()
-            .WithId(id)
-            .WithName(inspect.GetName())
-            .WithLabels(inspect.Config.Labels)
-            .WithTty(inspect.Config.Tty)
-            .WithRestartTrigger(new SimpleTriggerBuilder()
-                .WithThreshold(GetLabelValue(inspect.Config.Labels, Labels.RestartThreshold, dockerCategory.RestartCategory.Threshold))
-                .WithResetAfter(TimeSpan.FromSeconds(GetLabelValue(inspect.Config.Labels, Labels.RestartTimeout, dockerCategory.RestartCategory.Timeout)))
-                .Build())
-            .Build();
+        var container = new Container {
+            Id = id,
+            Name = inspect.GetName(),
+            Labels = inspect.Config.Labels,
+            Tty = inspect.Config.Tty,
+            RestartTrigger = CreateRestartTrigger(inspect.Config.Labels)
+        };
 
         _containers.Add(id, container);
         if (inspect.State.Running) {
@@ -153,6 +145,20 @@ public class DockerService(
         } finally {
             _lock.Release();
         }
+    }
+
+    private TriggerBase CreateRestartTrigger(IDictionary<string,string> labels) {
+        var category = _config.Value?.DockerCategory;
+        if (category == null) {
+            throw new InvalidOperationException("DockerCategory is unavailable");
+        }
+
+        var threshold = GetLabelValue(labels, Labels.RestartThreshold, category.RestartCategory.Threshold);
+        var timeout = GetLabelValue(labels, Labels.RestartTimeout, category.RestartCategory.Timeout);
+        return new SimpleTriggerBuilder()
+            .WithThreshold(threshold)
+            .WithResetAfter(TimeSpan.FromSeconds(timeout))
+            .Build();
     }
 
     public Container? GetContainer(string key) {

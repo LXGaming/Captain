@@ -2,20 +2,15 @@
 
 namespace LXGaming.Captain.Services.Docker.Models;
 
-public class Container(
-    string id,
-    string name,
-    IDictionary<string, string> labels,
-    bool tty,
-    TriggerBase restartTrigger) {
+public class Container {
 
-    public string Id { get; } = id;
+    public required string Id { get; init; }
 
-    public string Name { get; } = name;
+    public required string Name { get; init; }
 
-    public IDictionary<string, string> Labels { get; } = labels;
+    public required IDictionary<string, string> Labels { get; init; }
 
-    public bool Tty { get; } = tty;
+    public required bool Tty { get; init; }
 
-    public TriggerBase RestartTrigger { get; } = restartTrigger;
+    public required TriggerBase RestartTrigger { get; init; }
 }
