@@ -4,7 +4,6 @@ using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Services.Docker.Models;
 using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Utilities;
-using LXGaming.Configuration;
 using LXGaming.Configuration.Generic;
 using LXGaming.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,15 +14,14 @@ namespace LXGaming.Captain.Services.Notification.Providers;
 
 [Service(ServiceLifetime.Singleton, typeof(INotificationProvider))]
 public class DiscordNotificationProvider(
-    IConfiguration configuration,
+    IConfiguration<Config> configuration,
     ILogger<DiscordNotificationProvider> logger) : IHostedService, INotificationProvider, IDisposable {
 
-    private readonly IProvider<Config> _config = configuration.GetRequiredProvider<IProvider<Config>>();
     private DiscordWebhookClient? _discordClient;
     private bool _disposed;
 
     public Task StartAsync(CancellationToken cancellationToken) {
-        var category = _config.Value?.NotificationCategory;
+        var category = configuration.Value?.NotificationCategory;
         if (category == null) {
             throw new InvalidOperationException("NotificationCategory is unavailable");
         }
@@ -97,7 +95,7 @@ public class DiscordNotificationProvider(
     }
 
     private Task<ulong> SendAlertAsync(IEnumerable<Embed>? embeds = null) {
-        var mentions = _config.Value?.NotificationCategory.Mentions;
+        var mentions = configuration.Value?.NotificationCategory.Mentions;
         if (mentions == null || mentions.Count == 0) {
             return SendMessageAsync(null, embeds);
         }
@@ -113,7 +111,7 @@ public class DiscordNotificationProvider(
     private Task<ulong> SendMessageAsync(string? text = null, IEnumerable<Embed>? embeds = null) {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
-        var category = _config.Value?.NotificationCategory;
+        var category = configuration.Value?.NotificationCategory;
         if (category == null) {
             throw new InvalidOperationException("NotificationCategory is unavailable");
         }

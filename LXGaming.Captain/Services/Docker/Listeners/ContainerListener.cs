@@ -3,7 +3,6 @@ using Docker.DotNet.Models;
 using LXGaming.Captain.Models;
 using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Services.Notification;
-using LXGaming.Configuration;
 using LXGaming.Configuration.Generic;
 using LXGaming.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,15 +13,13 @@ namespace LXGaming.Captain.Services.Docker.Listeners;
 
 [Service(ServiceLifetime.Singleton, typeof(IListener))]
 public class ContainerListener(
-    IConfiguration configuration,
+    IConfiguration<CaptainConfig> configuration,
     IDockerClient dockerClient,
     DockerService dockerService,
     ILogger<ContainerListener> logger,
     NotificationService notificationService) : IListener {
 
     public string Type => "container";
-
-    private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<IProvider<CaptainConfig>>();
 
     public Task ExecuteAsync(Message message) {
         var action = message.ParseAction();
@@ -57,7 +54,7 @@ public class ContainerListener(
             return;
         }
 
-        var restartCategory = _config.Value?.DockerCategory.RestartCategory;
+        var restartCategory = configuration.Value?.DockerCategory.RestartCategory;
         if (dockerService.GetLabelValue(container.Labels, Labels.RestartAutomaticStop, restartCategory?.AutomaticStop)
             && !dockerService.GetLabelValue(container.Labels, Labels.MonitorOnly)) {
             await dockerClient.Containers.StopContainerAsync(container.Id, new ContainerStopParameters());
@@ -74,7 +71,7 @@ public class ContainerListener(
 
         logger.LogDebug("Container Health Status: {Name} ({Id})", container.Name, container.GetShortId());
 
-        var healthCategory = _config.Value?.DockerCategory.HealthCategory;
+        var healthCategory = configuration.Value?.DockerCategory.HealthCategory;
         if (string.Equals(status, "healthy") && dockerService.GetLabelValue(container.Labels, Labels.HealthHealthy, healthCategory?.Healthy)) {
             return notificationService.NotifyAsync(provider => provider.SendHealthStatusAsync(container, true));
         }

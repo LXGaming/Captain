@@ -9,7 +9,6 @@ using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Captain.Services.Notification;
 using LXGaming.Captain.Triggers;
 using LXGaming.Captain.Triggers.Simple;
-using LXGaming.Configuration;
 using LXGaming.Configuration.Generic;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -19,13 +18,12 @@ using CaptainConfig = LXGaming.Captain.Configuration.Config;
 namespace LXGaming.Captain.Services.Docker;
 
 public class DockerService(
-    IConfiguration configuration,
+    IConfiguration<CaptainConfig> configuration,
     IDockerClient dockerClient,
     ILogger<DockerService> logger,
     NotificationService notificationService,
     IServiceProvider serviceProvider) : IHostedService, IDisposable {
 
-    private readonly IProvider<CaptainConfig> _config = configuration.GetRequiredProvider<IProvider<CaptainConfig>>();
     private readonly CancellationTokenSource _cancelSource = new();
     private readonly Dictionary<string, Container> _containers = new();
     private readonly SemaphoreSlim _lock = new(1, 1);
@@ -94,7 +92,7 @@ public class DockerService(
     }
 
     public Task OnStartAsync(Container container, DateTimeOffset startedAt) {
-        var logCategories = _config.Value?.DockerCategory.LogCategories
+        var logCategories = configuration.Value?.DockerCategory.LogCategories
             .Where(category => category.Names?.Contains(container.Name) == true || (!string.IsNullOrEmpty(category.Label) && container.Labels.ContainsKey(category.Label)))
             .ToList();
         if (logCategories == null || logCategories.Count == 0) {
@@ -148,7 +146,7 @@ public class DockerService(
     }
 
     private TriggerBase CreateRestartTrigger(IDictionary<string,string> labels) {
-        var category = _config.Value?.DockerCategory;
+        var category = configuration.Value?.DockerCategory;
         if (category == null) {
             throw new InvalidOperationException("DockerCategory is unavailable");
         }

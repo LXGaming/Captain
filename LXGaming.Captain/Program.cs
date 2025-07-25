@@ -3,7 +3,6 @@ using System.Text.Json;
 using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Common.Serilog;
-using LXGaming.Configuration;
 using LXGaming.Configuration.File.Json;
 using LXGaming.Configuration.Hosting;
 using LXGaming.Hosting.Generated;
@@ -27,8 +26,7 @@ Log.Logger = new LoggerConfiguration()
 Log.Information("Initialising...");
 
 try {
-    var configuration = new DefaultConfiguration();
-    await configuration.LoadJsonFileAsync<Config>(
+    var configuration = await JsonFileConfiguration<Config>.LoadAsync(
         options: new JsonSerializerOptions {
             WriteIndented = true
         }
