@@ -4,7 +4,7 @@
 [![Docker Hub](https://img.shields.io/docker/v/lxgaming/captain/latest?label=Docker%20Hub)](https://hub.docker.com/r/lxgaming/captain)
 
 ## Usage
-### docker-compose
+### Docker Compose
 Download and use [config.json](https://raw.githubusercontent.com/LXGaming/Captain/main/LXGaming.Captain/config.json)
 ```yaml
 services:
