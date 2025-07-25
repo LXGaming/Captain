@@ -22,13 +22,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.Webhook" Version="3.17.4" />
+    <PackageReference Include="Discord.Net.Webhook" Version="3.18.0" />
     <PackageReference Include="Docker.DotNet" Version="3.125.15" />
     <PackageReference Include="LXGaming.Common" Version="1.9.1" />
     <PackageReference Include="LXGaming.Common.Serilog" Version="1.9.1" />
     <PackageReference Include="LXGaming.Configuration.Hosting" Version="1.2.2" />
     <PackageReference Include="LXGaming.Hosting.Generators" Version="1.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.7" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="9.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
