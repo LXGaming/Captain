@@ -198,11 +198,11 @@ public class DockerService(
             return;
         }
 
+        _disposed = true;
+
         if (disposing) {
             _cancelSource.Dispose();
             _lock.Dispose();
         }
-
-        _disposed = true;
     }
 }

@@ -138,10 +138,10 @@ public class DiscordNotificationProvider(
             return;
         }
 
+        _disposed = true;
+
         if (disposing) {
             _discordClient?.Dispose();
         }
-
-        _disposed = true;
     }
 }

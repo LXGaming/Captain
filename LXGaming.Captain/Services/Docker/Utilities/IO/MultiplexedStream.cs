@@ -79,11 +79,11 @@ public class MultiplexedStream(Stream stream, bool multiplexed) : Stream {
 
     protected override void Dispose(bool disposing) {
         if (!_disposed) {
+            _disposed = true;
+
             if (disposing) {
                 stream.Dispose();
             }
-
-            _disposed = true;
         }
 
         base.Dispose(disposing);
