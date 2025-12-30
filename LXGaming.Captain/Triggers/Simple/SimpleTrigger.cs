@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Triggers.Simple;
+namespace LXGaming.Captain.Triggers.Simple;
 
 public class SimpleTrigger(
     int threshold,

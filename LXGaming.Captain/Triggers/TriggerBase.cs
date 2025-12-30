@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Triggers;
+namespace LXGaming.Captain.Triggers;
 
 public abstract class TriggerBase(int threshold, TimeSpan? resetAfter, TimeSpan? fireInterval) {
 

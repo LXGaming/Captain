@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using LXGaming.Captain.Services.Docker.Models;

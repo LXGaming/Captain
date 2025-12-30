@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Triggers.Tracking;
+namespace LXGaming.Captain.Triggers.Tracking;
 
 public class TrackingTriggerBuilder : TriggerBuilderBase<TrackingTriggerBuilder, TrackingTrigger> {
 

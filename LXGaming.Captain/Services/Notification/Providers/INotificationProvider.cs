@@ -1,4 +1,4 @@
-﻿using LXGaming.Captain.Services.Docker.Models;
+using LXGaming.Captain.Services.Docker.Models;
 
 namespace LXGaming.Captain.Services.Notification.Providers;
 

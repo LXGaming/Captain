@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Services.Docker.Utilities.IO;
+namespace LXGaming.Captain.Services.Docker.Utilities.IO;
 
 public class MultiplexedStream(Stream stream, bool multiplexed) : Stream {
 

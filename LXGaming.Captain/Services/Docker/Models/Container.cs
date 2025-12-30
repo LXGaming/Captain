@@ -1,4 +1,4 @@
-﻿using LXGaming.Captain.Triggers;
+using LXGaming.Captain.Triggers;
 
 namespace LXGaming.Captain.Services.Docker.Models;
 

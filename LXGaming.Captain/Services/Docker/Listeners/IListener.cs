@@ -1,4 +1,4 @@
-﻿using Docker.DotNet.Models;
+using Docker.DotNet.Models;
 
 namespace LXGaming.Captain.Services.Docker.Listeners;
 

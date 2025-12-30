@@ -1,4 +1,4 @@
-﻿using LXGaming.Captain.Services.Docker.Models;
+using LXGaming.Captain.Services.Docker.Models;
 using LXGaming.Captain.Services.Docker.Utilities;
 using LXGaming.Hosting;
 using Microsoft.Extensions.DependencyInjection;

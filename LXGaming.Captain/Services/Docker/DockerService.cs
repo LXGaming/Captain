@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using LXGaming.Captain.Configuration.Categories.Docker;

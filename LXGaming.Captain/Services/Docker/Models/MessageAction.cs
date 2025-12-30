@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Services.Docker.Models;
+namespace LXGaming.Captain.Services.Docker.Models;
 
 public readonly struct MessageAction(string key, string? value) {
 

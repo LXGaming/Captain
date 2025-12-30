@@ -1,4 +1,4 @@
-﻿using System.Text.Json.Serialization;
+using System.Text.Json.Serialization;
 using LXGaming.Captain.Configuration.Categories.Docker;
 
 namespace LXGaming.Captain.Configuration.Categories;

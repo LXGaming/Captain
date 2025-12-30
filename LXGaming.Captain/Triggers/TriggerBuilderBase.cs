@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Triggers;
+namespace LXGaming.Captain.Triggers;
 
 public abstract class TriggerBuilderBase<TTriggerBuilder, TTrigger>
     where TTriggerBuilder : TriggerBuilderBase<TTriggerBuilder, TTrigger>

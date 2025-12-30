@@ -1,4 +1,4 @@
-﻿using System.IO.Compression;
+using System.IO.Compression;
 using System.Text.Json;
 using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Services.Docker.Utilities;

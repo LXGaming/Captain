@@ -1,4 +1,4 @@
-﻿using LXGaming.Captain.Configuration.Categories.Docker;
+using LXGaming.Captain.Configuration.Categories.Docker;
 
 namespace LXGaming.Captain.Models;
 

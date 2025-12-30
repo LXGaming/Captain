@@ -1,4 +1,4 @@
-﻿using Discord;
+using Discord;
 using Discord.Webhook;
 using LXGaming.Captain.Configuration;
 using LXGaming.Captain.Services.Docker.Models;

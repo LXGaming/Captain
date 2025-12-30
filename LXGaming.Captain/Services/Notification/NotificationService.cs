@@ -1,4 +1,4 @@
-﻿using LXGaming.Captain.Services.Notification.Providers;
+using LXGaming.Captain.Services.Notification.Providers;
 using LXGaming.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

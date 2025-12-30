@@ -1,4 +1,4 @@
-﻿namespace LXGaming.Captain.Models;
+namespace LXGaming.Captain.Models;
 
 public class Label<T>(string id, string name, T defaultValue) where T : IConvertible {
 
