@@ -35,7 +35,7 @@ public class DockerService(
             new Progress<Message>(OnMessageAsync),
             _cancelSource.Token).ContinueWith(task => {
             logger.LogError(task.Exception, "Encountered an error while monitoring events");
-        }, TaskContinuationOptions.OnlyOnFaulted);
+        }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
 
         var parameters = new ContainersListParameters {
             All = true
@@ -106,7 +106,7 @@ public class DockerService(
             Follow = true
         }, message => OnLogAsync(container, logCategories, message)).ContinueWith(task => {
             logger.LogError(task.Exception, "Encountered an error while monitoring logs");
-        }, TaskContinuationOptions.OnlyOnFaulted);
+        }, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
 
         return Task.CompletedTask;
     }
