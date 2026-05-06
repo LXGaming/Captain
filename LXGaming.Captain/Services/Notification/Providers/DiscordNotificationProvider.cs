@@ -23,7 +23,7 @@ public class DiscordNotificationProvider(
     public Task StartAsync(CancellationToken cancellationToken) {
         var category = configuration.Value?.NotificationCategory;
         if (category == null) {
-            throw new InvalidOperationException("NotificationCategory is unavailable");
+            throw new InvalidOperationException("NotificationCategory is unavailable.");
         }
 
         if (!category.Enabled) {
@@ -113,11 +113,11 @@ public class DiscordNotificationProvider(
 
         var category = configuration.Value?.NotificationCategory;
         if (category == null) {
-            throw new InvalidOperationException("NotificationCategory is unavailable");
+            throw new InvalidOperationException("NotificationCategory is unavailable.");
         }
 
         if (_discordClient == null) {
-            throw new InvalidOperationException("DiscordClient is unavailable");
+            throw new InvalidOperationException("DiscordClient is unavailable.");
         }
 
         return _discordClient.SendMessageAsync(

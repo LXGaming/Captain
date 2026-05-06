@@ -148,7 +148,7 @@ public class DockerService(
     private TriggerBase CreateRestartTrigger(IDictionary<string,string> labels) {
         var category = configuration.Value?.DockerCategory;
         if (category == null) {
-            throw new InvalidOperationException("DockerCategory is unavailable");
+            throw new InvalidOperationException("DockerCategory is unavailable.");
         }
 
         var threshold = GetLabelValue(labels, Labels.RestartThreshold, category.RestartCategory.Threshold);
