@@ -32,14 +32,12 @@ try {
         }
     });
 
-    var builder = Host.CreateDefaultBuilder(args);
-    builder.UseConfiguration(configuration);
-    builder.UseSerilog();
+    var builder = Host.CreateApplicationBuilder(args);
+    builder.Services.AddConfiguration(configuration);
+    builder.Services.AddSerilog();
 
-    builder.ConfigureServices(services => {
-        services.AddDockerService();
-        services.AddAllServices();
-    });
+    builder.Services.AddDockerService();
+    builder.Services.AddAllServices();
 
     var host = builder.Build();
 
